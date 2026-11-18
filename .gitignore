@@ -1,0 +1,13 @@
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Private files
+recruitment task/
+.ai/context/
