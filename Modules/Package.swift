@@ -10,10 +10,10 @@ let package = Package(
         .library(name: "WeatherDetailScreen", targets: ["WeatherDetailScreen"]),
     ],
     targets: [
-        .target(name: "AppFeature", dependencies: ["SearchScreen"]),
+        .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature"]),
         .target(name: "SearchScreen"),
-        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen"]),
+        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
     ],
