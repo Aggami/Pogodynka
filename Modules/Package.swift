@@ -8,6 +8,13 @@ let package = Package(
         .library(name: "AppFeature", targets: ["AppFeature"]),
         .library(name: "SearchScreen", targets: ["SearchScreen"]),
         .library(name: "WeatherDetailScreen", targets: ["WeatherDetailScreen"]),
+        .library(name: "SharedModels", targets: ["SharedModels"]),
+        .library(name: "WeatherService", targets: ["WeatherService"]),
+        .library(name: "Persistence", targets: ["Persistence"]),
+        .library(name: "TestSupport", targets: ["TestSupport"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.4.3"),
     ],
     targets: [
         .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
@@ -16,6 +23,32 @@ let package = Package(
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen"]),
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
+        .target(name: "SharedModels"),
+        .target(
+            name: "WeatherService",
+            dependencies: ["SharedModels"],
+        ),
+        .testTarget(
+            name: "WeatherServiceTests",
+            dependencies: ["WeatherService"],
+        ),
+        .target(
+            name: "Persistence",
+            dependencies: ["SharedModels"],
+        ),
+        .testTarget(
+            name: "PersistenceTests",
+            dependencies: ["Persistence"],
+        ),
+        .target(
+            name: "TestSupport",
+            dependencies: [
+                "SharedModels",
+                "WeatherService",
+                "Persistence",
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
+            ],
+        ),
     ],
     swiftLanguageModes: [.v6],
 )

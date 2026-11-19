@@ -14,9 +14,15 @@ Open `Pogodynka.xcworkspace` in Xcode and run the `Pogodynka` scheme on a simula
 Main app layout:
 
 - `Pogodynka/` is a thin SwiftUI app target. It only starts the app.
-- `Modules/` is a local Swift package with the app's code, split into modules. It currently holds one module, `AppFeature`, with the root view.
+- `Modules/` is a local Swift package with the app's code, split into modules. The `TestSupport` module holds mocks and is linked only by test targets.
 
 The code lives in a package so that modules have clear boundaries and their own tests. See [Development setup](#development-setup) before committing.
+
+## Dependency injection
+
+Dependencies are plain protocols (`WeatherServiceProtocol`, `SearchHistoryStoreProtocol`) passed in through
+an `init`. Features take these protocols, and tests pass the mocks from `TestSupport`
+(`MockWeatherService`, `MockSearchHistoryStore`). The live values are placeholders for now.
 
 ## Development setup
 
