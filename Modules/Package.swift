@@ -9,6 +9,10 @@ let package = Package(
         .library(name: "SearchScreen", targets: ["SearchScreen"]),
         .library(name: "WeatherDetailScreen", targets: ["WeatherDetailScreen"]),
         .library(name: "SharedModels", targets: ["SharedModels"]),
+        .library(name: "WeatherService", targets: ["WeatherService"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.17.2"),
     ],
     targets: [
         .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
@@ -18,6 +22,17 @@ let package = Package(
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
         .target(name: "SharedModels"),
+        .target(
+            name: "WeatherService",
+            dependencies: [
+                "SharedModels",
+                .product(name: "Dependencies", package: "swift-dependencies"),
+            ],
+        ),
+        .testTarget(
+            name: "WeatherServiceTests",
+            dependencies: ["WeatherService"],
+        ),
     ],
     swiftLanguageModes: [.v6],
 )
