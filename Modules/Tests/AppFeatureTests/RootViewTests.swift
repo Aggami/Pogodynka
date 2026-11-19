@@ -1,9 +1,9 @@
+import AppFeature
 import SwiftUI
 import Testing
-import AppFeature
 
 struct RootViewTests {
-    @Test @MainActor func rootViewCanBeCreatedFromOutsideTheModule() {
+    @Test @MainActor func `root view can be created from outside the module`() {
         let view = RootView()
         _ = view.body
     }

@@ -11,5 +11,5 @@ let package = Package(
         .target(name: "AppFeature"),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature"]),
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageModes: [.v6],
 )

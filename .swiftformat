@@ -1,0 +1,3 @@
+--swiftversion 6.4
+--maxwidth 120
+--exclude DerivedData,.build,Modules/.build

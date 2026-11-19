@@ -1,0 +1,22 @@
+included:
+  - Pogodynka
+  - Modules
+
+excluded:
+  - .build
+  - DerivedData
+  - Modules/.build
+
+opt_in_rules:
+  - empty_count
+  - first_where
+  - contains_over_first_not_nil
+  - sorted_first_last
+  - redundant_nil_coalescing
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - fatal_error_message
+  - private_swiftui_state
+
+disabled_rules:
+  - trailing_comma # SwiftFormat adds trailing commas
