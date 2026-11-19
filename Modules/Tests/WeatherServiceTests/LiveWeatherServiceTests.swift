@@ -2,7 +2,7 @@ import SharedModels
 import Testing
 @testable import WeatherService
 
-struct WeatherServiceTests {
+struct LiveWeatherServiceTests {
     @Test func livePlaceholderReturnsNoCities() async throws {
         let cities = try await LiveWeatherService().searchCities("Kraków")
 

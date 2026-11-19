@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "WeatherDetailScreen", targets: ["WeatherDetailScreen"]),
         .library(name: "SharedModels", targets: ["SharedModels"]),
         .library(name: "WeatherService", targets: ["WeatherService"]),
+        .library(name: "Persistence", targets: ["Persistence"]),
     ],
     dependencies: [
         .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.17.2"),
@@ -32,6 +33,17 @@ let package = Package(
         .testTarget(
             name: "WeatherServiceTests",
             dependencies: ["WeatherService"],
+        ),
+        .target(
+            name: "Persistence",
+            dependencies: [
+                "SharedModels",
+                .product(name: "Dependencies", package: "swift-dependencies"),
+            ],
+        ),
+        .testTarget(
+            name: "PersistenceTests",
+            dependencies: ["Persistence"],
         ),
     ],
     swiftLanguageModes: [.v6],
