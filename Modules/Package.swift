@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "AppFeature", targets: ["AppFeature"]),
         .library(name: "SearchScreen", targets: ["SearchScreen"]),
         .library(name: "WeatherDetailScreen", targets: ["WeatherDetailScreen"]),
+        .library(name: "SharedModels", targets: ["SharedModels"]),
     ],
     targets: [
         .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
@@ -16,6 +17,7 @@ let package = Package(
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen"]),
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
+        .target(name: "SharedModels"),
     ],
     swiftLanguageModes: [.v6],
 )
