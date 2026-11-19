@@ -1,9 +1,11 @@
 import SharedModels
 
-struct LiveSearchHistoryStore: SearchHistoryStore {
-    func loadHistory() async throws -> [City] {
+public struct LiveSearchHistoryStore: SearchHistoryStore {
+    public init() {}
+
+    public func loadHistory() async throws -> [City] {
         []
     }
 
-    func save(_: City) async throws {}
+    public func save(_: City) async throws {}
 }

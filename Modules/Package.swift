@@ -14,7 +14,6 @@ let package = Package(
         .library(name: "TestSupport", targets: ["TestSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.17.2"),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.4.3"),
     ],
     targets: [
@@ -27,10 +26,7 @@ let package = Package(
         .target(name: "SharedModels"),
         .target(
             name: "WeatherService",
-            dependencies: [
-                "SharedModels",
-                .product(name: "Dependencies", package: "swift-dependencies"),
-            ],
+            dependencies: ["SharedModels"],
         ),
         .testTarget(
             name: "WeatherServiceTests",
@@ -38,10 +34,7 @@ let package = Package(
         ),
         .target(
             name: "Persistence",
-            dependencies: [
-                "SharedModels",
-                .product(name: "Dependencies", package: "swift-dependencies"),
-            ],
+            dependencies: ["SharedModels"],
         ),
         .testTarget(
             name: "PersistenceTests",

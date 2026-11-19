@@ -20,11 +20,10 @@ The code lives in a package so that modules have clear boundaries and their own 
 
 ## Dependency injection
 
-Dependencies are injected with [swift-dependencies](https://github.com/pointfreeco/swift-dependencies).
-App-wide services (weather, persistence) are protocols, read in code as
-`@Dependency(\.weatherService)`. Small, stateless tools are just passed in through an `init`. The live values are
-placeholders for now. Tests override them with the mocks from `TestSupport`, for example
-`@Test(.dependency(\.weatherService, MockWeatherService()))`.
+Dependencies are plain protocols (`WeatherServiceProtocol`, `SearchHistoryStore`) passed in through
+an `init`. The app root creates the live values once and hands them down. Tests pass the mocks from
+`TestSupport`, for example `SearchModel(weather: MockWeatherService())`. The live values are
+placeholders for now.
 
 ## Development setup
 
