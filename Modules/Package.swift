@@ -53,7 +53,6 @@ let package = Package(
                 "SharedModels",
                 "WeatherService",
                 "Persistence",
-                .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ],
         ),
