@@ -1,6 +1,6 @@
 import SharedModels
 
-public struct LiveSearchHistoryStore: SearchHistoryStore {
+public struct LiveSearchHistoryStore: SearchHistoryStoreProtocol {
     public init() {}
 
     public func loadHistory() async throws -> [City] {

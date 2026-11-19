@@ -2,7 +2,7 @@ import ConcurrencyExtras
 import Persistence
 import SharedModels
 
-public final class MockSearchHistoryStore: SearchHistoryStore {
+public final class MockSearchHistoryStore: SearchHistoryStoreProtocol {
     private let loadError: (any Error)?
     private let saveError: (any Error)?
     private let storedHistory: LockIsolated<[City]>

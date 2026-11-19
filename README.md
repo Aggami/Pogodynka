@@ -20,10 +20,9 @@ The code lives in a package so that modules have clear boundaries and their own 
 
 ## Dependency injection
 
-Dependencies are plain protocols (`WeatherServiceProtocol`, `SearchHistoryStore`) passed in through
-an `init`. The app root creates the live values once and hands them down. Tests pass the mocks from
-`TestSupport`, for example `SearchModel(weather: MockWeatherService())`. The live values are
-placeholders for now.
+Dependencies are plain protocols (`WeatherServiceProtocol`, `SearchHistoryStoreProtocol`) passed in through
+an `init`. Features take these protocols, and tests pass the mocks from `TestSupport`
+(`MockWeatherService`, `MockSearchHistoryStore`). The live values are placeholders for now.
 
 ## Development setup
 

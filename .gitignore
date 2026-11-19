@@ -5,6 +5,9 @@ DerivedData/
 .build/
 .swiftpm/
 
+# SwiftPM (the workspace's Package.resolved is the committed one)
+Modules/Package.resolved
+
 # macOS
 .DS_Store
 
