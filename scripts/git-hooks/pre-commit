@@ -1,0 +1,39 @@
+#!/bin/bash
+# Formats staged Swift files with SwiftFormat, then lints them with SwiftLint.
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+files=()
+while IFS= read -r -d '' file; do
+    case "$file" in
+        *.swift) files+=("$file") ;;
+    esac
+done < <(git diff --cached --name-only -z --diff-filter=ACMR)
+
+if [ ${#files[@]} -eq 0 ]; then
+    exit 0
+fi
+
+if ! command -v swiftformat >/dev/null 2>&1 || ! command -v swiftlint >/dev/null 2>&1; then
+    echo "swiftformat and swiftlint are required. Install them with:"
+    echo "  brew install swiftformat swiftlint"
+    exit 1
+fi
+
+partly_staged=()
+for file in "${files[@]}"; do
+    if ! git diff --quiet -- "$file"; then
+        partly_staged+=("$file")
+    fi
+done
+
+if [ ${#partly_staged[@]} -gt 0 ]; then
+    echo "These files have unstaged changes. Stage the whole file (git add) and commit again:"
+    printf '  %s\n' "${partly_staged[@]}"
+    exit 1
+fi
+
+swiftformat --quiet "${files[@]}" || exit 1
+git add -- "${files[@]}"
+
+swiftlint lint --strict --quiet --force-exclude "${files[@]}" || exit 1
