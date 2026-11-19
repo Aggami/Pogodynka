@@ -13,7 +13,7 @@ let package = Package(
         .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature"]),
         .target(name: "SearchScreen"),
-        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
+        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen"]),
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
     ],

@@ -3,13 +3,13 @@ import Testing
 
 @MainActor
 struct RouterTests {
-    @Test func `starts on search screen`() {
+    @Test func pathIsEmptyInitially() {
         let router = Router()
 
         #expect(router.path.isEmpty)
     }
 
-    @Test func `push opens weather detail for city`() {
+    @Test func pushOpensWeatherDetailForCity() {
         let router = Router()
 
         router.push(.weatherDetail(cityName: "Kraków"))
@@ -17,7 +17,7 @@ struct RouterTests {
         #expect(router.path == [.weatherDetail(cityName: "Kraków")])
     }
 
-    @Test func `push keeps routes in order`() {
+    @Test func pushKeepsRoutesInOrder() {
         let router = Router()
 
         router.push(.weatherDetail(cityName: "Kraków"))
