@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "WeatherService", targets: ["WeatherService"]),
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "TestSupport", targets: ["TestSupport"]),
+        .library(name: "DesignSystem", targets: ["DesignSystem"]),
     ],
     dependencies: [
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.4.3"),
@@ -24,6 +25,8 @@ let package = Package(
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
         .target(name: "SharedModels"),
+        .target(name: "DesignSystem", resources: [.process("Resources")]),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .target(
             name: "WeatherService",
             dependencies: ["SharedModels"],
