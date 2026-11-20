@@ -1,18 +1,19 @@
+import SharedModels
 import SwiftUI
 
 public struct WeatherDetailView: View {
-    private let cityName: String
+    private let city: City
 
-    public init(cityName: String) {
-        self.cityName = cityName
+    public init(city: City) {
+        self.city = city
     }
 
     public var body: some View {
-        Text(cityName)
+        Text(city.name)
             .font(.largeTitle)
     }
 }
 
 #Preview {
-    WeatherDetailView(cityName: "Kraków")
+    WeatherDetailView(city: City(name: "Kraków", country: "Polska", region: "małopolskie"))
 }

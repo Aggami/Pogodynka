@@ -12,7 +12,7 @@ struct LiveSearchHistoryStoreTests {
     @Test func livePlaceholderSaveDoesNotThrowAndHistoryStaysEmpty() async throws {
         let store = LiveSearchHistoryStore()
 
-        try await store.save(City(name: "Kraków"))
+        try await store.save(City(name: "Kraków", country: "Polska", region: "małopolskie"))
 
         #expect(try await store.loadHistory().isEmpty)
     }
