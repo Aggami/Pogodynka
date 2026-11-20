@@ -20,8 +20,8 @@ let package = Package(
     targets: [
         .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen"]),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature"]),
-        .target(name: "SearchScreen"),
-        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen"]),
+        .target(name: "SearchScreen", dependencies: ["WeatherService", "DesignSystem"]),
+        .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "TestSupport"]),
         .target(name: "WeatherDetailScreen"),
         .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
         .target(name: "SharedModels"),
