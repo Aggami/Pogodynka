@@ -3,8 +3,8 @@ import SharedModels
 import WeatherService
 
 public final class MockWeatherService: WeatherServiceProtocol {
-    private let searchResultToReturn: Result<[City], any Error>
-    private let forecastResultToReturn: Result<Forecast, any Error>
+    private let searchResultToReturn: Result<[City], WeatherServiceError>
+    private let forecastResultToReturn: Result<Forecast, WeatherServiceError>
     private let holdsSearches: Bool
     private let ignoresCancellation: Bool
     private let searched = LockIsolated<[String]>([])
@@ -13,8 +13,8 @@ public final class MockWeatherService: WeatherServiceProtocol {
     private let nextHeldID = LockIsolated<UInt>(0)
 
     public init(
-        searchResultToReturn: Result<[City], any Error> = .success([]),
-        forecastResultToReturn: Result<Forecast, any Error> = .success(Forecast(currentTemperature: 0)),
+        searchResultToReturn: Result<[City], WeatherServiceError> = .success([]),
+        forecastResultToReturn: Result<Forecast, WeatherServiceError> = .success(Forecast(currentTemperature: 0)),
         holdsSearches: Bool = false,
         ignoresCancellation: Bool = false,
     ) {
@@ -32,13 +32,15 @@ public final class MockWeatherService: WeatherServiceProtocol {
         requested.value
     }
 
-    public func searchCities(_ query: String) async throws -> [City] {
+    public func searchCities(_ query: String) async throws(WeatherServiceError) -> [City] {
         searched.withValue { $0.append(query) }
-        if holdsSearches { try await waitForRelease() }
+        if holdsSearches {
+            do { try await waitForRelease() } catch { throw .cancelled }
+        }
         return try searchResultToReturn.get()
     }
 
-    public func forecast(for city: City) async throws -> Forecast {
+    public func forecast(for city: City) async throws(WeatherServiceError) -> Forecast {
         requested.withValue { $0.append(city) }
         return try forecastResultToReturn.get()
     }

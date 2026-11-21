@@ -15,7 +15,7 @@ final class SearchViewModel {
     private let weatherService: any WeatherServiceProtocol
 
     init(
-        weatherService: any WeatherServiceProtocol = LiveWeatherService(),
+        weatherService: any WeatherServiceProtocol = OpenMeteoWeatherService(),
         debounce: Duration = .milliseconds(300),
     ) {
         self.weatherService = weatherService

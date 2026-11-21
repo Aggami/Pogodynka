@@ -211,7 +211,7 @@ enum SearchViewModelTests {
         }
 
         @Test func noConnectionErrorEndsInNoConnectionState() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.noConnection))
+            let service = MockWeatherService(searchResultToReturn: .failure(.noConnection))
             let viewModel = makeViewModel(service)
 
             _ = viewModel.processNewTextInput("Wro")
@@ -220,19 +220,9 @@ enum SearchViewModelTests {
             #expect(viewModel.state == .error(.noConnection))
         }
 
-        @Test func anyOtherErrorEndsInServerState() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(SomeError()))
-            let viewModel = makeViewModel(service)
-
-            _ = viewModel.processNewTextInput("Wro")
-            await viewModel.waitForSearch()
-
-            #expect(viewModel.state == .error(.server))
-        }
-
         @Test func searchCancelledByNewTextNeverEndsInError() async {
             let service = MockWeatherService(
-                searchResultToReturn: .failure(WeatherServiceError.server),
+                searchResultToReturn: .failure(.server),
                 holdsSearches: true,
                 ignoresCancellation: true,
             )
@@ -261,7 +251,7 @@ enum SearchViewModelTests {
         }
 
         @Test func shorteningTextAfterAnErrorGoesBackToIdle() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
+            let service = MockWeatherService(searchResultToReturn: .failure(.server))
             let viewModel = makeViewModel(service)
             _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
@@ -272,7 +262,7 @@ enum SearchViewModelTests {
         }
 
         @Test func retryAfterAnErrorShowsLoadingWithNoPreviousResults() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
+            let service = MockWeatherService(searchResultToReturn: .failure(.server))
             let viewModel = makeViewModel(service)
             _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
@@ -287,5 +277,3 @@ enum SearchViewModelTests {
         }
     }
 }
-
-private struct SomeError: Error {}

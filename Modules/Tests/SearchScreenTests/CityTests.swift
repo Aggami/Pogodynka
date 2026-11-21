@@ -2,11 +2,10 @@
 import SharedModels
 import Testing
 
-@MainActor
-struct CityRowTests {
+struct CityTests {
     private func subtitle(country: String?, region: String?) -> String? {
         let city = City(id: 1, name: "Wrocław", latitude: 51.1, longitude: 17.03, country: country, region: region)
-        return CityRow(city: city).subtitle
+        return city.locationSubtitle
     }
 
     @Test func countryAndRegionAreJoined() {

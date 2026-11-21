@@ -11,7 +11,7 @@ struct CityRow: View {
                 Text(city.name)
                     .font(.title3)
                     .foregroundStyle(DesignSystemColor.text)
-                if let subtitle {
+                if let subtitle = city.locationSubtitle {
                     Text(subtitle)
                         .font(.subheadline)
                         .foregroundStyle(DesignSystemColor.secondaryText)
@@ -23,10 +23,5 @@ struct CityRow: View {
                 .accessibilityHidden(true)
         }
         .contentShape(Rectangle())
-    }
-
-    var subtitle: String? {
-        let parts = [city.country, city.region].compactMap(\.self)
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 }
