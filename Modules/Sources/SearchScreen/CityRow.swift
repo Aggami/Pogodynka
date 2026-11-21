@@ -11,9 +11,11 @@ struct CityRow: View {
                 Text(city.name)
                     .font(.title3)
                     .foregroundStyle(DesignSystemColor.text)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(DesignSystemColor.secondaryText)
+                if let subtitle = city.locationSubtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignSystemColor.secondaryText)
+                }
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -21,13 +23,5 @@ struct CityRow: View {
                 .accessibilityHidden(true)
         }
         .contentShape(Rectangle())
-    }
-
-    private var subtitle: String {
-        if let region = city.region {
-            "\(city.country), \(region)"
-        } else {
-            city.country
-        }
     }
 }

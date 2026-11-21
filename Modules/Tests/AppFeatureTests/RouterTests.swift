@@ -4,8 +4,22 @@ import Testing
 
 @MainActor
 struct RouterTests {
-    private let krakow = City(name: "Kraków", country: "Polska", region: "małopolskie")
-    private let gdansk = City(name: "Gdańsk", country: "Polska", region: "pomorskie")
+    private let krakow = City(
+        id: 1,
+        name: "Kraków",
+        latitude: 50.06,
+        longitude: 19.94,
+        country: "Polska",
+        region: "małopolskie",
+    )
+    private let gdansk = City(
+        id: 2,
+        name: "Gdańsk",
+        latitude: 54.35,
+        longitude: 18.65,
+        country: "Polska",
+        region: "pomorskie",
+    )
 
     @Test func pathIsEmptyInitially() {
         let router = Router()

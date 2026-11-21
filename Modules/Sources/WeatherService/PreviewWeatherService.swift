@@ -15,21 +15,36 @@
             self.behavior = behavior
         }
 
-        public func searchCities(_: String) async throws -> [City] {
+        public func searchCities(_: String) async throws(WeatherServiceError) -> [City] {
             switch behavior {
-            case .neverAnswers: try await Task.sleep(for: .seconds(3600))
+            case .neverAnswers:
+                do { try await Task.sleep(for: .seconds(3600)) } catch { throw .cancelled }
             case .noCities: return []
             case let .failing(error): throw error
             case .instantResults: break
             }
             return [
-                City(name: "Wrocław", country: "Polska", region: "dolnośląskie"),
-                City(name: "Wrocanka", country: "Polska", region: "podkarpackie"),
-                City(name: "Wrocław", country: "Polska"),
+                City(
+                    id: 1,
+                    name: "Wrocław",
+                    latitude: 51.1,
+                    longitude: 17.03,
+                    country: "Polska",
+                    region: "dolnośląskie",
+                ),
+                City(
+                    id: 2,
+                    name: "Wrocanka",
+                    latitude: 49.7,
+                    longitude: 21.7,
+                    country: "Polska",
+                    region: "podkarpackie",
+                ),
+                City(id: 3, name: "Wrocław", latitude: 51.0, longitude: 17.0, country: "Polska"),
             ]
         }
 
-        public func forecast(for _: City) async throws -> Forecast {
+        public func forecast(for _: City) async throws(WeatherServiceError) -> Forecast {
             Forecast(currentTemperature: 0)
         }
     }

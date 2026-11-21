@@ -68,7 +68,7 @@ public struct SearchView: View {
     }
 
     private func cityList(_ cities: [City]) -> some View {
-        List(cities, id: \.self) { city in
+        List(cities) { city in
             Button {
                 onCitySelected(city)
             } label: {

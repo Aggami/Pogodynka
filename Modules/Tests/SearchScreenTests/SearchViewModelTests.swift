@@ -41,8 +41,21 @@ enum SearchViewModelTests {
 
     @MainActor
     struct Searching {
-        private let wroclaw = City(name: "Wrocław", country: "Polska", region: "dolnośląskie")
-        private let wroclawPracze = City(name: "Wrocław Pracze", country: "Polska")
+        private let wroclaw = City(
+            id: 1,
+            name: "Wrocław",
+            latitude: 51.1,
+            longitude: 17.03,
+            country: "Polska",
+            region: "dolnośląskie",
+        )
+        private let wroclawPracze = City(
+            id: 2,
+            name: "Wrocław Pracze",
+            latitude: 51.15,
+            longitude: 16.95,
+            country: "Polska",
+        )
 
         private func makeViewModel(
             _ service: MockWeatherService,
@@ -198,7 +211,7 @@ enum SearchViewModelTests {
         }
 
         @Test func noConnectionErrorEndsInNoConnectionState() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.noConnection))
+            let service = MockWeatherService(searchResultToReturn: .failure(.noConnection))
             let viewModel = makeViewModel(service)
 
             _ = viewModel.processNewTextInput("Wro")
@@ -207,8 +220,8 @@ enum SearchViewModelTests {
             #expect(viewModel.state == .error(.noConnection))
         }
 
-        @Test func anyOtherErrorEndsInServerState() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(SomeError()))
+        @Test func cancelledErrorOutsideACancelledTaskEndsInServerState() async {
+            let service = MockWeatherService(searchResultToReturn: .failure(.cancelled))
             let viewModel = makeViewModel(service)
 
             _ = viewModel.processNewTextInput("Wro")
@@ -219,7 +232,7 @@ enum SearchViewModelTests {
 
         @Test func searchCancelledByNewTextNeverEndsInError() async {
             let service = MockWeatherService(
-                searchResultToReturn: .failure(WeatherServiceError.server),
+                searchResultToReturn: .failure(.server),
                 holdsSearches: true,
                 ignoresCancellation: true,
             )
@@ -248,7 +261,7 @@ enum SearchViewModelTests {
         }
 
         @Test func shorteningTextAfterAnErrorGoesBackToIdle() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
+            let service = MockWeatherService(searchResultToReturn: .failure(.server))
             let viewModel = makeViewModel(service)
             _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
@@ -259,7 +272,7 @@ enum SearchViewModelTests {
         }
 
         @Test func retryAfterAnErrorShowsLoadingWithNoPreviousResults() async {
-            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
+            let service = MockWeatherService(searchResultToReturn: .failure(.server))
             let viewModel = makeViewModel(service)
             _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
@@ -274,5 +287,3 @@ enum SearchViewModelTests {
         }
     }
 }
-
-private struct SomeError: Error {}

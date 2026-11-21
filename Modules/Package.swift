@@ -33,7 +33,10 @@ let package = Package(
         ),
         .testTarget(
             name: "WeatherServiceTests",
-            dependencies: ["WeatherService"],
+            dependencies: [
+                "WeatherService",
+                .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
+            ],
         ),
         .target(
             name: "Persistence",
