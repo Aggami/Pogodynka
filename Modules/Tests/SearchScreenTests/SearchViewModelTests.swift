@@ -64,7 +64,7 @@ enum SearchViewModelTests {
             #expect(viewModel.state == .loaded([wroclaw]))
         }
 
-        @Test(arguments: ["", "W", "Wr", "  W ", "   "])
+        @Test(arguments: ["", "W", "Wr", "  W ", "   ", "---", "W-r"])
         func shortTextDoesNotSearch(text: String) async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
@@ -89,11 +89,12 @@ enum SearchViewModelTests {
 
         @Test func changesWithinThePauseMakeOneCall() async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
-            let viewModel = makeViewModel(service)
+            let viewModel = makeViewModel(service, debounce: .milliseconds(50))
 
             _ = viewModel.processQuery("Wro")
             _ = viewModel.processQuery("Wroc")
             _ = viewModel.processQuery("Wrocł")
+            #expect(service.searchedQueries.isEmpty)
             await viewModel.waitForSearch()
 
             #expect(service.searchedQueries == ["Wrocł"])
@@ -134,14 +135,18 @@ enum SearchViewModelTests {
         }
 
         @Test func cancelledSearchNeverShowsItsAnswer() async {
-            let service = MockWeatherService(searchResultToReturn: .success([wroclaw]), holdsSearches: true)
+            let service = MockWeatherService(
+                searchResultToReturn: .success([wroclaw]),
+                holdsSearches: true,
+                ignoresCancellation: true,
+            )
             let viewModel = makeViewModel(service)
             _ = viewModel.processQuery("Wro")
             await service.waitForHeldSearch()
 
             _ = viewModel.processQuery("Wr")
-            await Task.yield()
             service.releaseSearches()
+            await viewModel.waitForSearch()
 
             #expect(viewModel.state == .idle)
         }
@@ -193,13 +198,15 @@ enum SearchViewModelTests {
             let service = MockWeatherService(
                 searchResultToReturn: .failure(WeatherServiceError.server),
                 holdsSearches: true,
+                ignoresCancellation: true,
             )
             let viewModel = makeViewModel(service)
             _ = viewModel.processQuery("Wro")
             await service.waitForHeldSearch()
 
             _ = viewModel.processQuery("Wr")
-            await Task.yield()
+            service.releaseSearches()
+            await viewModel.waitForSearch()
 
             #expect(viewModel.state == .idle)
         }
@@ -217,7 +224,7 @@ enum SearchViewModelTests {
             #expect(viewModel.state == .loaded([wroclaw]))
         }
 
-        @Test func typingNewTextAfterAnErrorSearchesAgain() async {
+        @Test func shorteningTextAfterAnErrorGoesBackToIdle() async {
             let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
             let viewModel = makeViewModel(service)
             _ = viewModel.processQuery("Wro")
@@ -226,6 +233,21 @@ enum SearchViewModelTests {
             _ = viewModel.processQuery("Wr")
 
             #expect(viewModel.state == .idle)
+        }
+
+        @Test func retryAfterAnErrorShowsLoadingWithNoPreviousResults() async {
+            let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
+            let viewModel = makeViewModel(service)
+            _ = viewModel.processQuery("Wro")
+            await viewModel.waitForSearch()
+            #expect(viewModel.state == .error(.server))
+
+            viewModel.retry()
+            #expect(viewModel.state == .loading(previous: []))
+            await viewModel.waitForSearch()
+
+            #expect(service.searchedQueries == ["Wro", "Wro"])
+            #expect(viewModel.state == .error(.server))
         }
     }
 }

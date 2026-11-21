@@ -50,8 +50,7 @@ final class SearchViewModel {
 
     private func startSearch(for text: String) {
         searchTask?.cancel()
-        searchTask = nil
-        guard text.count >= Self.minimumSearchLength else {
+        guard text.filter(\.isLetter).count >= Self.minimumSearchLength else {
             state = .idle
             return
         }

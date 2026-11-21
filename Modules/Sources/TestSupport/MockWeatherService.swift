@@ -6,6 +6,7 @@ public final class MockWeatherService: WeatherServiceProtocol {
     private let searchResultToReturn: Result<[City], any Error>
     private let forecastResultToReturn: Result<Forecast, any Error>
     private let holdsSearches: Bool
+    private let ignoresCancellation: Bool
     private let searched = LockIsolated<[String]>([])
     private let requested = LockIsolated<[City]>([])
     private let heldSearches = LockIsolated<[UInt: CheckedContinuation<Void, any Error>]>([:])
@@ -15,10 +16,12 @@ public final class MockWeatherService: WeatherServiceProtocol {
         searchResultToReturn: Result<[City], any Error> = .success([]),
         forecastResultToReturn: Result<Forecast, any Error> = .success(Forecast(currentTemperature: 0)),
         holdsSearches: Bool = false,
+        ignoresCancellation: Bool = false,
     ) {
         self.searchResultToReturn = searchResultToReturn
         self.forecastResultToReturn = forecastResultToReturn
         self.holdsSearches = holdsSearches
+        self.ignoresCancellation = ignoresCancellation
     }
 
     public var searchedQueries: [String] {
@@ -66,10 +69,10 @@ public final class MockWeatherService: WeatherServiceProtocol {
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
                 heldSearches.withValue { $0[id] = continuation }
-                if Task.isCancelled { cancelHeldSearch(id) }
+                if Task.isCancelled, !ignoresCancellation { cancelHeldSearch(id) }
             }
         } onCancel: {
-            cancelHeldSearch(id)
+            if !ignoresCancellation { cancelHeldSearch(id) }
         }
     }
 
