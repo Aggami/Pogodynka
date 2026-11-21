@@ -45,7 +45,13 @@
         }
 
         public func forecast(for _: City) async throws(WeatherServiceError) -> Forecast {
-            Forecast(currentTemperature: 0)
+            switch behavior {
+            case .neverAnswers:
+                do { try await Task.sleep(for: .seconds(3600)) } catch { throw .cancelled }
+            case let .failing(error): throw error
+            case .instantResults, .noCities: break
+            }
+            return .sample
         }
     }
 #endif

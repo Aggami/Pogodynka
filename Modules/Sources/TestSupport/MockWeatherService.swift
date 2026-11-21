@@ -14,7 +14,7 @@ public final class MockWeatherService: WeatherServiceProtocol {
 
     public init(
         searchResultToReturn: Result<[City], WeatherServiceError> = .success([]),
-        forecastResultToReturn: Result<Forecast, WeatherServiceError> = .success(Forecast(currentTemperature: 0)),
+        forecastResultToReturn: Result<Forecast, WeatherServiceError> = .success(.sample),
         holdsSearches: Bool = false,
         ignoresCancellation: Bool = false,
     ) {
