@@ -41,8 +41,21 @@ enum SearchViewModelTests {
 
     @MainActor
     struct Searching {
-        private let wroclaw = City(name: "Wrocław", country: "Polska", region: "dolnośląskie")
-        private let wroclawPracze = City(name: "Wrocław Pracze", country: "Polska")
+        private let wroclaw = City(
+            id: 1,
+            name: "Wrocław",
+            latitude: 51.1,
+            longitude: 17.03,
+            country: "Polska",
+            region: "dolnośląskie",
+        )
+        private let wroclawPracze = City(
+            id: 2,
+            name: "Wrocław Pracze",
+            latitude: 51.15,
+            longitude: 16.95,
+            country: "Polska",
+        )
 
         private func makeViewModel(
             _ service: MockWeatherService,

@@ -23,9 +23,23 @@
             case .instantResults: break
             }
             return [
-                City(name: "Wrocław", country: "Polska", region: "dolnośląskie"),
-                City(name: "Wrocanka", country: "Polska", region: "podkarpackie"),
-                City(name: "Wrocław", country: "Polska"),
+                City(
+                    id: 1,
+                    name: "Wrocław",
+                    latitude: 51.1,
+                    longitude: 17.03,
+                    country: "Polska",
+                    region: "dolnośląskie",
+                ),
+                City(
+                    id: 2,
+                    name: "Wrocanka",
+                    latitude: 49.7,
+                    longitude: 21.7,
+                    country: "Polska",
+                    region: "podkarpackie",
+                ),
+                City(id: 3, name: "Wrocław", latitude: 51.0, longitude: 17.0, country: "Polska"),
             ]
         }
 

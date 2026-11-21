@@ -15,5 +15,12 @@ public struct WeatherDetailView: View {
 }
 
 #Preview {
-    WeatherDetailView(city: City(name: "Kraków", country: "Polska", region: "małopolskie"))
+    WeatherDetailView(city: City(
+        id: 1,
+        name: "Kraków",
+        latitude: 50.06,
+        longitude: 19.94,
+        country: "Polska",
+        region: "małopolskie",
+    ))
 }

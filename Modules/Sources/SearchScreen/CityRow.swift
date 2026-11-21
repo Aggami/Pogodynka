@@ -11,9 +11,11 @@ struct CityRow: View {
                 Text(city.name)
                     .font(.title3)
                     .foregroundStyle(DesignSystemColor.text)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(DesignSystemColor.secondaryText)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(DesignSystemColor.secondaryText)
+                }
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -23,11 +25,8 @@ struct CityRow: View {
         .contentShape(Rectangle())
     }
 
-    private var subtitle: String {
-        if let region = city.region {
-            "\(city.country), \(region)"
-        } else {
-            city.country
-        }
+    var subtitle: String? {
+        let parts = [city.country, city.region].compactMap(\.self)
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 }
