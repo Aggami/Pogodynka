@@ -1,3 +1,4 @@
+import DesignSystem
 import SearchScreen
 import SwiftUI
 import WeatherDetailScreen
@@ -12,6 +13,7 @@ public struct RootView: View {
             SearchView { city in
                 router.push(.weatherDetail(city))
             }
+            .toolbarRole(.editor)
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .weatherDetail(let city):
@@ -19,6 +21,7 @@ public struct RootView: View {
                 }
             }
         }
+        .tint(DesignSystemColor.accent)
     }
 }
 

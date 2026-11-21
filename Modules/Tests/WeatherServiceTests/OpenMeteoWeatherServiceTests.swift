@@ -87,18 +87,83 @@ struct OpenMeteoWeatherServiceTests {
         }
     }
 
-    @Test func forecastIsStillPlaceholder() async throws {
-        let city = City(
-            id: 1,
-            name: "Kraków",
-            latitude: 50.06,
-            longitude: 19.94,
-            country: "Polska",
-            region: "małopolskie",
-        )
-        let forecast = try await OpenMeteoWeatherService().forecast(for: city)
+    private static let city = City(
+        id: 1,
+        name: "Kraków",
+        latitude: 50.06,
+        longitude: 19.94,
+        country: "Polska",
+        region: "małopolskie",
+    )
 
-        #expect(forecast == Forecast(currentTemperature: 0))
+    private static let forecastJSON = """
+    {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
+     "current": {"time": 1700000000, "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
+     "hourly": {
+       "time": [1700000000, 1700003600, 1700007200],
+       "temperature_2m": [14.5, 13.0, 12.5],
+       "precipitation_probability": [30, 55, null],
+       "weather_code": [2, 61, 71]
+     }}
+    """
+
+    @Test func fullResponseBecomesForecast() async throws {
+        let service = makeService(json(Self.forecastJSON))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.currentTemperature == 14.5)
+        #expect(forecast.cloudCover == 40)
+        #expect(forecast.condition == .partlyCloudy)
+        #expect(forecast.timeZone.identifier == "Europe/Warsaw")
+        #expect(forecast.hours.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
+            .map { Date(timeIntervalSince1970: $0) })
+        #expect(forecast.hours.map(\.temperature) == [14.5, 13.0, 12.5])
+        #expect(forecast.hours.map(\.condition) == [.partlyCloudy, .rain, .snow])
+        #expect(forecast.hours.map(\.precipitationChance) == [30, 55, 0])
+    }
+
+    @Test func forecastRequestSendsLocationHoursAndFields() async throws {
+        let service = makeService(json(Self.forecastJSON))
+
+        _ = try await service.forecast(for: Self.city)
+
+        let url = try #require(URLProtocolStub.requests.first?.url)
+        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        #expect(items.first { $0.name == "latitude" }?.value == "50.06")
+        #expect(items.first { $0.name == "longitude" }?.value == "19.94")
+        #expect(items.first { $0.name == "forecast_hours" }?.value == "12")
+        #expect(items.first { $0.name == "timezone" }?.value == "auto")
+        #expect(items.first { $0.name == "current" }?.value?.contains("weather_code") == true)
+        #expect(items.first { $0.name == "hourly" }?.value?.contains("weather_code") == true)
+    }
+
+    @Test func chanceOfRainIsTheCurrentHoursValue() async throws {
+        let service = makeService(json(Self.forecastJSON))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.precipitationChance == 30)
+    }
+
+    @Test(arguments: [
+        URLProtocolStub.Stub.response(status: 500, data: Data(forecastJSON.utf8)),
+        .response(status: 200, data: Data("not json".utf8)),
+    ])
+    func forecastFailuresGiveServerError(stub: URLProtocolStub.Stub) async {
+        let service = makeService(stub)
+
+        await #expect(throws: WeatherServiceError.server) {
+            try await service.forecast(for: Self.city)
+        }
+    }
+
+    @Test func forecastWithoutConnectionGivesNoConnection() async {
+        let service = makeService(.failure(URLError(.notConnectedToInternet)))
+
+        await #expect(throws: WeatherServiceError.noConnection) {
+            try await service.forecast(for: Self.city)
+        }
     }
 
     @Test(arguments: [(["pl-PL", "fr"], "pl"), (["en"], "en"), (["DE-at"], "de"), ([], "en")])
