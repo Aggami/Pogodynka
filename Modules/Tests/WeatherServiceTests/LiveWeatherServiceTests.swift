@@ -10,7 +10,8 @@ struct LiveWeatherServiceTests {
     }
 
     @Test func livePlaceholderReturnsZeroDegreeForecast() async throws {
-        let forecast = try await LiveWeatherService().forecast(for: City(name: "Kraków"))
+        let city = City(name: "Kraków", country: "Polska", region: "małopolskie")
+        let forecast = try await LiveWeatherService().forecast(for: city)
 
         #expect(forecast == Forecast(currentTemperature: 0))
     }

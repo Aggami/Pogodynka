@@ -1,4 +1,4 @@
 --swiftversion 6.2
 --maxwidth 120
 --exclude DerivedData,.build,Modules/.build
---disable swiftTestingTestCaseNames
+--disable swiftTestingTestCaseNames,hoistPatternLet

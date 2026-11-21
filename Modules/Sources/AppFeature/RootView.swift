@@ -9,13 +9,13 @@ public struct RootView: View {
 
     public var body: some View {
         NavigationStack(path: $router.path) {
-            SearchView { cityName in
-                router.push(.weatherDetail(cityName: cityName))
+            SearchView { city in
+                router.push(.weatherDetail(city))
             }
             .navigationDestination(for: Route.self) { route in
                 switch route {
-                case let .weatherDetail(cityName):
-                    WeatherDetailView(cityName: cityName)
+                case .weatherDetail(let city):
+                    WeatherDetailView(city: city)
                 }
             }
         }
