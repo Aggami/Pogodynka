@@ -17,7 +17,8 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
     }
 
     public func searchCities(_ query: String) async throws(WeatherServiceError) -> [City] {
-        let data = try await fetch(buildCitySearchURL(for: query))
+        guard let url = citySearchURL(for: query) else { throw .server }
+        let data = try await fetch(url)
         guard let decoded = try? JSONDecoder().decode(GeocodingResponse.self, from: data) else {
             throw .server
         }
@@ -25,7 +26,8 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
     }
 
     public func forecast(for city: City) async throws(WeatherServiceError) -> Forecast {
-        let data = try await fetch(buildForecastURL(for: city))
+        guard let url = forecastURL(for: city) else { throw .server }
+        let data = try await fetch(url)
         guard let decoded = try? JSONDecoder().decode(ForecastResponse.self, from: data),
               let forecast = decoded.forecast
         else { throw .server }
@@ -50,9 +52,8 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
         return data
     }
 
-    private func buildForecastURL(for city: City) throws(WeatherServiceError) -> URL {
-        var components = URLComponents(string: Self.forecastEndpoint)
-        components?.queryItems = [
+    private func forecastURL(for city: City) -> URL? {
+        URL(string: Self.forecastEndpoint)?.appending(queryItems: [
             URLQueryItem(name: "latitude", value: String(city.latitude)),
             URLQueryItem(name: "longitude", value: String(city.longitude)),
             URLQueryItem(name: "current", value: "temperature_2m,cloud_cover,weather_code"),
@@ -60,21 +61,16 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
             URLQueryItem(name: "forecast_hours", value: "12"),
             URLQueryItem(name: "timezone", value: "auto"),
             URLQueryItem(name: "timeformat", value: "unixtime"),
-        ]
-        guard let url = components?.url else { throw .server }
-        return url
+        ])
     }
 
-    private func buildCitySearchURL(for query: String) throws(WeatherServiceError) -> URL {
-        var components = URLComponents(string: Self.searchEndpoint)
-        components?.queryItems = [
+    private func citySearchURL(for query: String) -> URL? {
+        URL(string: Self.searchEndpoint)?.appending(queryItems: [
             URLQueryItem(name: "name", value: query),
             URLQueryItem(name: "count", value: "10"),
             URLQueryItem(name: "language", value: Self.languageCode(from: preferredLanguages)),
             URLQueryItem(name: "format", value: "json"),
-        ]
-        guard let url = components?.url else { throw .server }
-        return url
+        ])
     }
 
     static func languageCode(from preferredLanguages: [String]) -> String {

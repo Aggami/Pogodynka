@@ -37,7 +37,7 @@ struct HourlyForecastTable: View {
     }
 
     private func hourColumn(_ hour: HourlyForecast, isFirst: Bool) -> some View {
-        let label = HourLabel.text(for: hour.time, isFirst: isFirst, in: forecast.timeZone)
+        let label = isFirst ? "Now" : hour.time.hourLabel(in: forecast.timeZone)
         return VStack(spacing: 0) {
             cell(height: Row.hour.height) {
                 Text(label)
@@ -49,14 +49,14 @@ struct HourlyForecastTable: View {
             }
             cell(height: Row.rain.height) { value("\(hour.precipitationChance)%") }
             cell(height: Row.temperature.height, showsDivider: false) {
-                value(TemperatureText.text(hour.temperature))
+                value(hour.temperature.displayedTemperature)
             }
         }
         .frame(width: columnWidth)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             "\(label), \(hour.condition.displayName.lowercased()), rain \(hour.precipitationChance)%, "
-                + TemperatureText.text(hour.temperature),
+                + hour.temperature.displayedTemperature,
         )
     }
 

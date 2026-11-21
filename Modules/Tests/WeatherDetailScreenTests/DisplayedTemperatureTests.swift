@@ -1,12 +1,12 @@
 import Testing
 @testable import WeatherDetailScreen
 
-struct TemperatureTextTests {
+struct DisplayedTemperatureTests {
     @Test func temperatureIsRoundedToWholeDegrees() {
-        #expect(TemperatureText.text(14.6) == "15°")
+        #expect(14.6.displayedTemperature == "15°")
     }
 
     @Test func temperatureJustBelowZeroShowsZero() {
-        #expect(TemperatureText.text(-0.4) == "0°")
+        #expect((-0.4).displayedTemperature == "0°")
     }
 }
