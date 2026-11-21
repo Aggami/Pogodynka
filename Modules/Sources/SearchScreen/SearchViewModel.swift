@@ -10,6 +10,7 @@ final class SearchViewModel {
     private let weatherService: any WeatherServiceProtocol
     private let debounce: Duration
     private var searchTask: Task<Void, Never>?
+    private var lastSearchText = ""
 
     private(set) var state: SearchState = .idle
 
@@ -33,6 +34,12 @@ final class SearchViewModel {
         return query
     }
 
+    func retry() {
+        searchTask?.cancel()
+        state = .loading(previous: [])
+        runSearch(for: lastSearchText, pause: .zero)
+    }
+
     func waitForSearch() async {
         await searchTask?.value
     }
@@ -48,16 +55,21 @@ final class SearchViewModel {
             state = .idle
             return
         }
+        runSearch(for: text, pause: debounce)
+    }
+
+    private func runSearch(for text: String, pause: Duration) {
+        lastSearchText = text
         searchTask = Task {
             do {
-                try await Task.sleep(for: debounce)
+                try await Task.sleep(for: pause)
                 state = .loading(previous: shownCities)
                 let cities = try await weatherService.searchCities(text)
                 try Task.checkCancellation()
                 state = .loaded(cities)
             } catch {
                 if !Task.isCancelled {
-                    state = .idle
+                    state = .error(error as? WeatherServiceError == .noConnection ? .noConnection : .server)
                 }
             }
         }
@@ -68,6 +80,7 @@ final class SearchViewModel {
         case .idle: []
         case let .loading(previous): previous
         case let .loaded(cities): cities
+        case .error: []
         }
     }
 }

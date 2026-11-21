@@ -72,7 +72,19 @@ public struct SearchView: View {
                 .padding(.top, 8)
             cityList(previous)
         case let .loaded(cities):
-            cityList(cities)
+            if cities.isEmpty {
+                ContentUnavailableView.search(text: viewModel.query)
+            } else {
+                cityList(cities)
+            }
+        case let .error(error):
+            ContentUnavailableView {
+                Label(error.title, systemImage: error.systemImage)
+            } description: {
+                Text(error.message)
+            } actions: {
+                Button("Try again") { viewModel.retry() }
+            }
         }
     }
 
@@ -96,13 +108,18 @@ public struct SearchView: View {
         enum Behavior {
             case instantResults
             case neverAnswers
+            case noCities
+            case failing(WeatherServiceError)
         }
 
         let behavior: Behavior
 
         func searchCities(_: String) async throws -> [City] {
-            if behavior == .neverAnswers {
-                try await Task.sleep(for: .seconds(3600))
+            switch behavior {
+            case .neverAnswers: try await Task.sleep(for: .seconds(3600))
+            case .noCities: return []
+            case let .failing(error): throw error
+            case .instantResults: break
             }
             return [
                 City(name: "Wrocław", country: "Polska", region: "dolnośląskie"),
@@ -141,6 +158,24 @@ public struct SearchView: View {
     #Preview("Results") {
         NavigationStack {
             SearchView(viewModel: previewViewModel(.instantResults)) { _ in }
+        }
+    }
+
+    #Preview("Empty") {
+        NavigationStack {
+            SearchView(viewModel: previewViewModel(.noCities)) { _ in }
+        }
+    }
+
+    #Preview("No internet") {
+        NavigationStack {
+            SearchView(viewModel: previewViewModel(.failing(.noConnection))) { _ in }
+        }
+    }
+
+    #Preview("API error") {
+        NavigationStack {
+            SearchView(viewModel: previewViewModel(.failing(.server))) { _ in }
         }
     }
 #endif
