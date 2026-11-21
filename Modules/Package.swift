@@ -18,12 +18,18 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.4.3"),
     ],
     targets: [
-        .target(name: "AppFeature", dependencies: ["SearchScreen", "WeatherDetailScreen", "SharedModels"]),
+        .target(
+            name: "AppFeature",
+            dependencies: ["SearchScreen", "WeatherDetailScreen", "SharedModels", "DesignSystem"],
+        ),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature", "SharedModels"]),
         .target(name: "SearchScreen", dependencies: ["WeatherService", "DesignSystem", "SharedModels"]),
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "TestSupport", "SharedModels"]),
-        .target(name: "WeatherDetailScreen", dependencies: ["SharedModels"]),
-        .testTarget(name: "WeatherDetailScreenTests", dependencies: ["WeatherDetailScreen"]),
+        .target(name: "WeatherDetailScreen", dependencies: ["SharedModels", "WeatherService", "DesignSystem"]),
+        .testTarget(
+            name: "WeatherDetailScreenTests",
+            dependencies: ["WeatherDetailScreen", "TestSupport", "SharedModels"],
+        ),
         .target(name: "SharedModels"),
         .target(name: "DesignSystem", resources: [.process("Resources")]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),

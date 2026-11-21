@@ -4,7 +4,7 @@ import WeatherService
 
 public final class MockWeatherService: WeatherServiceProtocol {
     private let searchResultToReturn: Result<[City], WeatherServiceError>
-    private let forecastResultToReturn: Result<Forecast, WeatherServiceError>
+    private let forecastResultToReturn: LockIsolated<Result<Forecast, WeatherServiceError>>
     private let holdsSearches: Bool
     private let ignoresCancellation: Bool
     private let searched = LockIsolated<[String]>([])
@@ -19,7 +19,7 @@ public final class MockWeatherService: WeatherServiceProtocol {
         ignoresCancellation: Bool = false,
     ) {
         self.searchResultToReturn = searchResultToReturn
-        self.forecastResultToReturn = forecastResultToReturn
+        self.forecastResultToReturn = LockIsolated(forecastResultToReturn)
         self.holdsSearches = holdsSearches
         self.ignoresCancellation = ignoresCancellation
     }
@@ -32,6 +32,10 @@ public final class MockWeatherService: WeatherServiceProtocol {
         requested.value
     }
 
+    public func setForecastResult(_ result: Result<Forecast, WeatherServiceError>) {
+        forecastResultToReturn.setValue(result)
+    }
+
     public func searchCities(_ query: String) async throws(WeatherServiceError) -> [City] {
         searched.withValue { $0.append(query) }
         if holdsSearches {
@@ -42,7 +46,7 @@ public final class MockWeatherService: WeatherServiceProtocol {
 
     public func forecast(for city: City) async throws(WeatherServiceError) -> Forecast {
         requested.withValue { $0.append(city) }
-        return try forecastResultToReturn.get()
+        return try forecastResultToReturn.value.get()
     }
 
     /// Suspends until a held search is waiting for `releaseSearches()`.
