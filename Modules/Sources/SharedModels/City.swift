@@ -1,4 +1,4 @@
-public struct City: Sendable, Hashable, Identifiable {
+public struct City: Codable, Sendable, Hashable, Identifiable {
     public let id: Int
     public let name: String
     public let latitude: Double

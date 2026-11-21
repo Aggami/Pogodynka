@@ -30,6 +30,9 @@ public final class MockSearchHistoryStore: SearchHistoryStoreProtocol {
     public func save(_ city: City) async throws {
         saved.withValue { $0.append(city) }
         if let saveError { throw saveError }
-        storedHistory.withValue { $0.append(city) }
+        storedHistory.withValue {
+            $0.removeAll { $0.id == city.id }
+            $0.insert(city, at: 0)
+        }
     }
 }
