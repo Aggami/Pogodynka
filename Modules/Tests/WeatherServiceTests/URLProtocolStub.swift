@@ -41,7 +41,10 @@ final class URLProtocolStub: URLProtocol {
         case let .response(status, data):
             guard let url = request.url,
                   let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil)
-            else { return }
+            else {
+                client?.urlProtocol(self, didFailWithError: URLError(.badURL))
+                return
+            }
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
             client?.urlProtocolDidFinishLoading(self)

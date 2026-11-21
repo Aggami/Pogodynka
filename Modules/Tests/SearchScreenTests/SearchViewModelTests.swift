@@ -220,6 +220,16 @@ enum SearchViewModelTests {
             #expect(viewModel.state == .error(.noConnection))
         }
 
+        @Test func cancelledErrorOutsideACancelledTaskEndsInServerState() async {
+            let service = MockWeatherService(searchResultToReturn: .failure(.cancelled))
+            let viewModel = makeViewModel(service)
+
+            _ = viewModel.processNewTextInput("Wro")
+            await viewModel.waitForSearch()
+
+            #expect(viewModel.state == .error(.server))
+        }
+
         @Test func searchCancelledByNewTextNeverEndsInError() async {
             let service = MockWeatherService(
                 searchResultToReturn: .failure(.server),
