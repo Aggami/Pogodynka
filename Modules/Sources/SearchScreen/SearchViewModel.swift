@@ -7,14 +7,12 @@ import WeatherService
 final class SearchViewModel {
     private static let minimumSearchLength = 3
 
-    private let weatherService: any WeatherServiceProtocol
-    private let debounce: Duration
-    private var searchTask: Task<Void, Never>?
-    private var lastSearchText = ""
-
     private(set) var state: SearchState = .idle
+    private(set) var lastSearchText = ""
+    private var searchTask: Task<Void, Never>?
 
-    private(set) var query = ""
+    private let debounce: Duration
+    private let weatherService: any WeatherServiceProtocol
 
     init(
         weatherService: any WeatherServiceProtocol = LiveWeatherService(),
@@ -24,14 +22,15 @@ final class SearchViewModel {
         self.debounce = debounce
     }
 
-    func processQuery(_ text: String) -> String {
-        let previousText = trimmed(query)
-        query = String(text.filter { $0.isLetter || $0 == " " || $0 == "-" })
-        let newText = trimmed(query)
-        if newText != previousText {
-            startSearch(for: newText)
+    func processNewTextInput(_ inputText: String) -> String {
+        let filteredText = String(inputText.filter { $0.isLetter || $0 == " " || $0 == "-" })
+        let processedText = filteredText.trimmingCharacters(in: .whitespaces)
+        if processedText.filter(\.isLetter).count < Self.minimumSearchLength {
+            resetSearch()
+        } else if processedText != lastSearchText {
+            startSearch(for: processedText)
         }
-        return query
+        return filteredText
     }
 
     func retry() {
@@ -44,16 +43,14 @@ final class SearchViewModel {
         await searchTask?.value
     }
 
-    private func trimmed(_ text: String) -> String {
-        text.trimmingCharacters(in: .whitespaces)
+    private func resetSearch() {
+        searchTask?.cancel()
+        lastSearchText = ""
+        state = .idle
     }
 
     private func startSearch(for text: String) {
         searchTask?.cancel()
-        guard text.filter(\.isLetter).count >= Self.minimumSearchLength else {
-            state = .idle
-            return
-        }
         runSearch(for: text, pause: debounce)
     }
 

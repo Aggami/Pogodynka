@@ -30,36 +30,13 @@ public struct SearchView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(DesignSystemColor.secondaryText)
-                .accessibilityHidden(true)
-            TextField(
-                "",
-                text: $searchFieldText,
-                prompt: Text("Start searching a city").foregroundStyle(DesignSystemColor.secondaryText),
-            )
-            .textInputAutocapitalization(.words)
-            .autocorrectionDisabled()
-            .accessibilityLabel("Search for a city")
-            if !searchFieldText.isEmpty {
-                Button {
-                    searchFieldText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(DesignSystemColor.secondaryText)
+        SearchField(text: $searchFieldText)
+            .onChange(of: searchFieldText) { _, newText in
+                let filtered = viewModel.processNewTextInput(newText)
+                if filtered != newText {
+                    searchFieldText = filtered
                 }
-                .accessibilityLabel("Clear text")
             }
-        }
-        .padding(10)
-        .background(DesignSystemColor.surface, in: RoundedRectangle(cornerRadius: 10))
-        .onChange(of: searchFieldText) { _, newText in
-            let filtered = viewModel.processQuery(newText)
-            if filtered != newText {
-                searchFieldText = filtered
-            }
-        }
     }
 
     @ViewBuilder
@@ -75,7 +52,7 @@ public struct SearchView: View {
             cityList(previous)
         case let .loaded(cities):
             if cities.isEmpty {
-                ContentUnavailableView.search(text: viewModel.query)
+                ContentUnavailableView.search(text: viewModel.lastSearchText)
             } else {
                 cityList(cities)
             }
@@ -106,39 +83,10 @@ public struct SearchView: View {
 }
 
 #if DEBUG
-    private struct PreviewWeatherService: WeatherServiceProtocol {
-        enum Behavior {
-            case instantResults
-            case neverAnswers
-            case noCities
-            case failing(WeatherServiceError)
-        }
-
-        let behavior: Behavior
-
-        func searchCities(_: String) async throws -> [City] {
-            switch behavior {
-            case .neverAnswers: try await Task.sleep(for: .seconds(3600))
-            case .noCities: return []
-            case let .failing(error): throw error
-            case .instantResults: break
-            }
-            return [
-                City(name: "Wrocław", country: "Polska", region: "dolnośląskie"),
-                City(name: "Wrocanka", country: "Polska", region: "podkarpackie"),
-                City(name: "Wrocław", country: "Polska"),
-            ]
-        }
-
-        func forecast(for _: City) async throws -> Forecast {
-            Forecast(currentTemperature: 0)
-        }
-    }
-
     @MainActor
     private func previewViewModel(_ behavior: PreviewWeatherService.Behavior) -> SearchViewModel {
         let viewModel = SearchViewModel(weatherService: PreviewWeatherService(behavior: behavior), debounce: .zero)
-        _ = viewModel.processQuery("Wro")
+        _ = viewModel.processNewTextInput("Wro")
         return viewModel
     }
 

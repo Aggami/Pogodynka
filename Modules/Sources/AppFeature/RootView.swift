@@ -14,7 +14,7 @@ public struct RootView: View {
             }
             .navigationDestination(for: Route.self) { route in
                 switch route {
-                case let .weatherDetail(city):
+                case .weatherDetail(let city):
                     WeatherDetailView(city: city)
                 }
             }

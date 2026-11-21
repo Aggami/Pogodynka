@@ -10,9 +10,8 @@ enum SearchViewModelTests {
         @Test(arguments: ["Bielsko-Biała", "Nowy Sącz"])
         func validTextIsKept(text: String) {
             let viewModel = SearchViewModel(weatherService: MockWeatherService())
-            let returned = viewModel.processQuery(text)
+            let returned = viewModel.processNewTextInput(text)
             #expect(returned == text)
-            #expect(viewModel.query == text)
         }
 
         @Test(arguments: [
@@ -22,21 +21,20 @@ enum SearchViewModelTests {
         ])
         func invalidCharactersAreDropped(typed: String, expected: String) {
             let viewModel = SearchViewModel(weatherService: MockWeatherService())
-            let returned = viewModel.processQuery(typed)
+            let returned = viewModel.processNewTextInput(typed)
             #expect(returned == expected)
-            #expect(viewModel.query == expected)
         }
 
-        @Test func newViewModelStartsIdleWithEmptyQuery() {
+        @Test func newViewModelStartsIdleWithEmptySearchText() {
             let viewModel = SearchViewModel(weatherService: MockWeatherService())
             #expect(viewModel.state == .idle)
-            #expect(viewModel.query.isEmpty)
+            #expect(viewModel.lastSearchText.isEmpty)
         }
 
         @Test func typingDoesNotCallTheWeatherService() {
             let service = MockWeatherService()
             let viewModel = SearchViewModel(weatherService: service)
-            _ = viewModel.processQuery("Kraków")
+            _ = viewModel.processNewTextInput("Kraków")
             #expect(service.searchedQueries.isEmpty)
         }
     }
@@ -57,7 +55,7 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery("Wro ")
+            _ = viewModel.processNewTextInput("Wro ")
             await viewModel.waitForSearch()
 
             #expect(service.searchedQueries == ["Wro"])
@@ -69,7 +67,7 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery(text)
+            _ = viewModel.processNewTextInput(text)
             await viewModel.waitForSearch()
 
             #expect(service.searchedQueries.isEmpty)
@@ -79,11 +77,36 @@ enum SearchViewModelTests {
         @Test func shorteningTheTextGoesBackToIdle() async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
-            _ = viewModel.processQuery("Wr")
+            _ = viewModel.processNewTextInput("Wr")
 
+            #expect(viewModel.state == .idle)
+        }
+
+        @Test func typingTheSameTextAgainAfterShorteningSearchesAgain() async {
+            let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
+            let viewModel = makeViewModel(service)
+
+            _ = viewModel.processNewTextInput("Wro")
+            await viewModel.waitForSearch()
+            _ = viewModel.processNewTextInput("Wr")
+            _ = viewModel.processNewTextInput("Wro")
+            await viewModel.waitForSearch()
+
+            #expect(service.searchedQueries == ["Wro", "Wro"])
+        }
+
+        @Test func trailingSpaceBelowTheMinimumKeepsIdle() async {
+            let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
+            let viewModel = makeViewModel(service)
+
+            _ = viewModel.processNewTextInput("Wr")
+            _ = viewModel.processNewTextInput("Wr ")
+            await viewModel.waitForSearch()
+
+            #expect(service.searchedQueries.isEmpty)
             #expect(viewModel.state == .idle)
         }
 
@@ -91,9 +114,9 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service, debounce: .milliseconds(50))
 
-            _ = viewModel.processQuery("Wro")
-            _ = viewModel.processQuery("Wroc")
-            _ = viewModel.processQuery("Wrocł")
+            _ = viewModel.processNewTextInput("Wro")
+            _ = viewModel.processNewTextInput("Wroc")
+            _ = viewModel.processNewTextInput("Wrocł")
             #expect(service.searchedQueries.isEmpty)
             await viewModel.waitForSearch()
 
@@ -105,14 +128,14 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]), holdsSearches: true)
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await service.waitForHeldSearch()
             #expect(viewModel.state == .loading(previous: []))
             service.releaseSearches()
             await viewModel.waitForSearch()
             #expect(viewModel.state == .loaded([wroclaw]))
 
-            _ = viewModel.processQuery("Wroc")
+            _ = viewModel.processNewTextInput("Wroc")
             await service.waitForHeldSearch()
             #expect(viewModel.state == .loading(previous: [wroclaw]))
             service.releaseSearches()
@@ -122,10 +145,10 @@ enum SearchViewModelTests {
         @Test func newTextCancelsTheRunningSearch() async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclawPracze]), holdsSearches: true)
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await service.waitForHeldSearch()
 
-            _ = viewModel.processQuery("Wroc")
+            _ = viewModel.processNewTextInput("Wroc")
             await service.waitForHeldSearch()
             service.releaseSearches()
             await viewModel.waitForSearch()
@@ -141,10 +164,10 @@ enum SearchViewModelTests {
                 ignoresCancellation: true,
             )
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await service.waitForHeldSearch()
 
-            _ = viewModel.processQuery("Wr")
+            _ = viewModel.processNewTextInput("Wr")
             service.releaseSearches()
             await viewModel.waitForSearch()
 
@@ -154,10 +177,10 @@ enum SearchViewModelTests {
         @Test func trailingSpaceDoesNotStartANewSearch() async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
-            _ = viewModel.processQuery("Wro ")
+            _ = viewModel.processNewTextInput("Wro ")
             await viewModel.waitForSearch()
 
             #expect(service.searchedQueries == ["Wro"])
@@ -168,7 +191,7 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .success([]))
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery("Xyz")
+            _ = viewModel.processNewTextInput("Xyz")
             await viewModel.waitForSearch()
 
             #expect(viewModel.state == .loaded([]))
@@ -178,7 +201,7 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.noConnection))
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
             #expect(viewModel.state == .error(.noConnection))
@@ -188,7 +211,7 @@ enum SearchViewModelTests {
             let service = MockWeatherService(searchResultToReturn: .failure(SomeError()))
             let viewModel = makeViewModel(service)
 
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
             #expect(viewModel.state == .error(.server))
@@ -201,10 +224,10 @@ enum SearchViewModelTests {
                 ignoresCancellation: true,
             )
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await service.waitForHeldSearch()
 
-            _ = viewModel.processQuery("Wr")
+            _ = viewModel.processNewTextInput("Wr")
             service.releaseSearches()
             await viewModel.waitForSearch()
 
@@ -214,7 +237,7 @@ enum SearchViewModelTests {
         @Test func retrySearchesTheSameTextAgain() async {
             let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
             viewModel.retry()
@@ -227,10 +250,10 @@ enum SearchViewModelTests {
         @Test func shorteningTextAfterAnErrorGoesBackToIdle() async {
             let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
 
-            _ = viewModel.processQuery("Wr")
+            _ = viewModel.processNewTextInput("Wr")
 
             #expect(viewModel.state == .idle)
         }
@@ -238,7 +261,7 @@ enum SearchViewModelTests {
         @Test func retryAfterAnErrorShowsLoadingWithNoPreviousResults() async {
             let service = MockWeatherService(searchResultToReturn: .failure(WeatherServiceError.server))
             let viewModel = makeViewModel(service)
-            _ = viewModel.processQuery("Wro")
+            _ = viewModel.processNewTextInput("Wro")
             await viewModel.waitForSearch()
             #expect(viewModel.state == .error(.server))
 
