@@ -29,10 +29,19 @@ public struct WeatherDetailView: View {
     private var content: some View {
         switch viewModel.state {
         case .loading:
-            CurrentWeatherBar(forecast: .placeholder)
-                .redacted(reason: .placeholder)
+            VStack(spacing: 16) {
+                CurrentWeatherBar(forecast: .placeholder)
+                HourlyForecastTable(forecast: .placeholder)
+            }
+            .redacted(reason: .placeholder)
         case let .loaded(forecast):
-            CurrentWeatherBar(forecast: forecast)
+            VStack(spacing: 16) {
+                CurrentWeatherBar(forecast: forecast)
+                HourlyForecastTable(forecast: forecast)
+                Text("Weather data by Open-Meteo.com")
+                    .font(.system(size: 13))
+                    .foregroundStyle(DesignSystemColor.secondaryText)
+            }
         case let .error(error):
             ContentUnavailableView {
                 Label(error.title, systemImage: error.systemImage)

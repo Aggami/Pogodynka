@@ -8,7 +8,7 @@ struct CurrentWeatherBar: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 24) {
-                Text("\(Int(forecast.currentTemperature.rounded()))°")
+                Text(TemperatureText.text(forecast.currentTemperature))
                     .font(.system(size: 72, weight: .light, design: .rounded))
                     .foregroundStyle(DesignSystemColor.text)
                 WeatherIcon(condition: forecast.condition, size: 72)
