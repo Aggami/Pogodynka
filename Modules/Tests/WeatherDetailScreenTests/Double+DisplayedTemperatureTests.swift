@@ -1,7 +1,7 @@
 import Testing
 @testable import WeatherDetailScreen
 
-struct DisplayedTemperatureTests {
+struct DoubleDisplayedTemperatureTests {
     @Test func temperatureIsRoundedToWholeDegrees() {
         #expect(14.6.displayedTemperature == "15°")
     }

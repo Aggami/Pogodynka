@@ -119,9 +119,9 @@ private struct ForecastCurrent: Decodable {
 
 private struct ForecastHourly: Decodable {
     let time: [Double]
-    let temperature: [Double]
+    let temperature: [Double?]
     let precipitationProbability: [Int?]
-    let weatherCode: [Int]
+    let weatherCode: [Int?]
 
     enum CodingKeys: String, CodingKey {
         case time
@@ -150,12 +150,13 @@ private struct ForecastResponse: Decodable {
               hourly.precipitationProbability.count == count,
               hourly.weatherCode.count == count
         else { return nil }
-        let hours = (0 ..< count).map { index in
-            HourlyForecast(
+        let hours = (0 ..< count).compactMap { index -> HourlyForecast? in
+            guard let temperature = hourly.temperature[index], let code = hourly.weatherCode[index] else { return nil }
+            return HourlyForecast(
                 time: Date(timeIntervalSince1970: hourly.time[index]),
-                temperature: hourly.temperature[index],
+                temperature: temperature,
                 precipitationChance: hourly.precipitationProbability[index] ?? 0,
-                condition: WeatherCondition(wmoCode: hourly.weatherCode[index]),
+                condition: WeatherCondition(wmoCode: code),
             )
         }
         let timeZone = timezone.flatMap { TimeZone(identifier: $0) }
