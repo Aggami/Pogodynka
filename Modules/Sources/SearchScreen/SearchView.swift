@@ -21,9 +21,9 @@ public struct SearchView: View {
         VStack {
             searchField
                 .padding(.horizontal)
+                .padding(.top, 16)
             content
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignSystemColor.background)
         .foregroundStyle(DesignSystemColor.text)
         .navigationTitle("Pogodynka")
@@ -69,7 +69,9 @@ public struct SearchView: View {
             Spacer()
         case let .loading(previous):
             ProgressView()
-                .padding(.top, 8)
+                .tint(DesignSystemColor.accent)
+                .scaleEffect(1.3)
+                .padding(.vertical, 20)
             cityList(previous)
         case let .loaded(cities):
             if cities.isEmpty {
