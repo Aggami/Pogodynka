@@ -23,7 +23,10 @@ let package = Package(
             dependencies: ["SearchScreen", "WeatherDetailScreen", "SharedModels", "DesignSystem"],
         ),
         .testTarget(name: "AppFeatureTests", dependencies: ["AppFeature", "SharedModels"]),
-        .target(name: "SearchScreen", dependencies: ["WeatherService", "DesignSystem", "SharedModels"]),
+        .target(
+            name: "SearchScreen",
+            dependencies: ["WeatherService", "Persistence", "DesignSystem", "SharedModels"],
+        ),
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "TestSupport", "SharedModels"]),
         .target(name: "WeatherDetailScreen", dependencies: ["SharedModels", "WeatherService", "DesignSystem"]),
         .testTarget(
