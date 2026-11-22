@@ -1,4 +1,5 @@
 import DesignSystem
+import Persistence
 import SharedModels
 import SwiftUI
 import WeatherService
@@ -27,6 +28,7 @@ public struct SearchView: View {
         .background(DesignSystemColor.background)
         .foregroundStyle(DesignSystemColor.text)
         .navigationTitle("Pogodynka")
+        .task { await viewModel.loadHistory() }
     }
 
     private var searchField: some View {
@@ -43,7 +45,7 @@ public struct SearchView: View {
     private var content: some View {
         switch viewModel.state {
         case .idle:
-            Spacer()
+            idleContent
         case let .loading(previous):
             ProgressView()
                 .tint(DesignSystemColor.accent)
@@ -67,15 +69,42 @@ public struct SearchView: View {
         }
     }
 
-    private func cityList(_ cities: [City]) -> some View {
-        List(cities) { city in
-            Button {
-                onCitySelected(city)
-            } label: {
-                CityRow(city: city)
+    @ViewBuilder
+    private var idleContent: some View {
+        if !viewModel.showsHistory {
+            Spacer()
+        } else if viewModel.history.isEmpty {
+            ContentUnavailableView(
+                "What is the weather like?",
+                systemImage: "magnifyingglass",
+                description: Text("Start searching for a city around the world to see the weather forecast."),
+            )
+        } else {
+            cityList(viewModel.history, header: "Latest searches")
+        }
+    }
+
+    private func cityList(_ cities: [City], header: LocalizedStringKey? = nil) -> some View {
+        List {
+            Section {
+                ForEach(cities) { city in
+                    Button {
+                        viewModel.selectCity(city)
+                        onCitySelected(city)
+                    } label: {
+                        CityRow(city: city)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparatorTint(DesignSystemColor.divider)
+                }
+            } header: {
+                if let header {
+                    Label(header, systemImage: "clock")
+                        .font(.subheadline)
+                        .foregroundStyle(DesignSystemColor.secondaryText)
+                        .textCase(nil)
+                }
             }
-            .listRowBackground(Color.clear)
-            .listRowSeparatorTint(DesignSystemColor.divider)
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -85,15 +114,30 @@ public struct SearchView: View {
 #if DEBUG
     @MainActor
     private func previewViewModel(_ behavior: PreviewWeatherService.Behavior) -> SearchViewModel {
-        let viewModel = SearchViewModel(weatherService: PreviewWeatherService(behavior: behavior), debounce: .zero)
+        let viewModel = SearchViewModel(
+            weatherService: PreviewWeatherService(behavior: behavior),
+            historyStore: PreviewSearchHistoryStore(hasHistory: false),
+            debounce: .zero,
+        )
         _ = viewModel.processNewTextInput("Wro")
         return viewModel
     }
 
-    #Preview("Idle") {
+    #Preview("Idle with history") {
         NavigationStack {
             SearchView(viewModel: SearchViewModel(
                 weatherService: PreviewWeatherService(behavior: .instantResults),
+                historyStore: PreviewSearchHistoryStore(hasHistory: true),
+            )) { _ in
+            }
+        }
+    }
+
+    #Preview("Idle, no history") {
+        NavigationStack {
+            SearchView(viewModel: SearchViewModel(
+                weatherService: PreviewWeatherService(behavior: .instantResults),
+                historyStore: PreviewSearchHistoryStore(hasHistory: false),
             )) { _ in
             }
         }

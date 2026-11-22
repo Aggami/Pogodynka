@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import Persistence
 import SharedModels
 import WeatherService
 
@@ -9,20 +10,48 @@ final class SearchViewModel {
 
     private(set) var state: SearchState = .idle
     private(set) var lastSearchText = ""
+    private(set) var history: [City] = []
+    private(set) var showsHistory = true
     private var searchTask: Task<Void, Never>?
+    private var historySaveTask: Task<Void, Never>?
+    private var hasLoadedHistory = false
 
     private let debounce: Duration
     private let weatherService: any WeatherServiceProtocol
+    private let historyStore: any SearchHistoryStoreProtocol
 
     init(
         weatherService: any WeatherServiceProtocol = OpenMeteoWeatherService(),
+        historyStore: any SearchHistoryStoreProtocol = UserDefaultsSearchHistoryStore(),
         debounce: Duration = .milliseconds(300),
     ) {
         self.weatherService = weatherService
+        self.historyStore = historyStore
         self.debounce = debounce
     }
 
+    func loadHistory() async {
+        guard !hasLoadedHistory else { return }
+        hasLoadedHistory = true
+        history = await (try? historyStore.loadHistory()) ?? []
+    }
+
+    func selectCity(_ city: City) {
+        history.removeAll { $0.id == city.id }
+        history.insert(city, at: 0)
+        let previousSave = historySaveTask
+        historySaveTask = Task {
+            await previousSave?.value
+            try? await historyStore.save(city)
+        }
+    }
+
+    func waitForHistorySave() async {
+        await historySaveTask?.value
+    }
+
     func processNewTextInput(_ inputText: String) -> String {
+        showsHistory = inputText.isEmpty
         let filteredText = String(inputText.filter { $0.isLetter || $0 == " " || $0 == "-" })
         let processedText = filteredText.trimmingCharacters(in: .whitespaces)
         if processedText.filter(\.isLetter).count < Self.minimumSearchLength {
