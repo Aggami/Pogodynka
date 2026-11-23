@@ -30,7 +30,11 @@ let package = Package(
             resources: [.process("Resources")],
         ),
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "TestSupport", "SharedModels"]),
-        .target(name: "WeatherDetailScreen", dependencies: ["SharedModels", "WeatherService", "DesignSystem"]),
+        .target(
+            name: "WeatherDetailScreen",
+            dependencies: ["SharedModels", "WeatherService", "DesignSystem"],
+            resources: [.process("Resources")],
+        ),
         .testTarget(
             name: "WeatherDetailScreenTests",
             dependencies: ["WeatherDetailScreen", "TestSupport", "SharedModels"],

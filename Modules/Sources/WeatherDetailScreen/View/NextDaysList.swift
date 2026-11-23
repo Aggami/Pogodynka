@@ -7,7 +7,7 @@ struct NextDaysList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Next days")
+            Text("Next days", bundle: .module)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(DesignSystemColor.secondaryText)
                 .unredacted()
@@ -44,9 +44,12 @@ struct NextDaysList: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(label), \(day.condition.displayName.lowercased()), lowest \(day.minTemperature.displayedTemperature), "
-                + "highest \(day.maxTemperature.displayedTemperature)",
-        )
+        .accessibilityLabel(String(
+            localized: """
+            \(label), \(day.condition.displayName.lowercased()), lowest \(day.minTemperature.displayedTemperature), \
+            highest \(day.maxTemperature.displayedTemperature)
+            """,
+            bundle: .module,
+        ))
     }
 }

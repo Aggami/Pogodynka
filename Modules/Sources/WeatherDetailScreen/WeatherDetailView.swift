@@ -40,7 +40,7 @@ public struct WeatherDetailView: View {
                 CurrentWeatherBar(forecast: forecast)
                 HourlyForecastTable(forecast: forecast)
                 NextDaysList(forecast: forecast)
-                Text("Weather data by Open-Meteo.com")
+                Text("Weather data by Open-Meteo.com", bundle: .module)
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
             }
@@ -50,7 +50,7 @@ public struct WeatherDetailView: View {
             } description: {
                 Text(error.message)
             } actions: {
-                Button("Try again") { Task { await viewModel.retry() } }
+                Button { Task { await viewModel.retry() } } label: { Text("Try again", bundle: .module) }
             }
         }
     }

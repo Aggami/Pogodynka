@@ -24,7 +24,7 @@ struct CurrentWeatherBar: View {
                 WeatherIcon(condition: forecast.condition, size: 72)
             }
             HStack(spacing: 4) {
-                Text("Feels like")
+                Text("Feels like", bundle: .module)
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
                 Text(forecast.feelsLikeTemperature.displayedTemperature)
@@ -58,7 +58,7 @@ struct CurrentWeatherBar: View {
                 .accessibilityHidden(true)
                 .unredacted()
             VStack(alignment: .leading, spacing: 2) {
-                Text(label)
+                Text(label, bundle: .module)
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
