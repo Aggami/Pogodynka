@@ -23,7 +23,7 @@ struct NextDaysList: View {
     }
 
     private func row(_ day: DailyForecast, isLast: Bool) -> some View {
-        let label = day.date.dayLabel(relativeTo: .now, in: forecast.timeZone)
+        let label = day.date.dayLabel(relativeTo: forecast.currentTime, in: forecast.timeZone)
         return HStack(spacing: 12) {
             Text(label)
                 .font(.system(size: 17))

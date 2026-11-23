@@ -36,6 +36,7 @@
                 condition: .partlyCloudy,
                 hours: hours,
                 days: days,
+                currentTime: start,
                 timeZone: TimeZone(identifier: "Europe/Warsaw") ?? .gmt,
             )
         }()

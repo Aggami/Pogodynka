@@ -226,6 +226,7 @@ private struct ForecastResponse: Decodable {
             condition: WeatherCondition(wmoCode: current.weatherCode),
             hours: hours,
             days: Array(days.prefix(6)),
+            currentTime: now,
             timeZone: timeZone,
         )
     }

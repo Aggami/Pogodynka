@@ -13,6 +13,8 @@ public struct Forecast: Sendable, Hashable {
     public let hours: [HourlyForecast]
     /// The days after today.
     public let days: [DailyForecast]
+    /// The moment the forecast was made.
+    public let currentTime: Date
     public let timeZone: TimeZone
 
     public init(
@@ -25,6 +27,7 @@ public struct Forecast: Sendable, Hashable {
         condition: WeatherCondition,
         hours: [HourlyForecast],
         days: [DailyForecast],
+        currentTime: Date,
         timeZone: TimeZone,
     ) {
         self.currentTemperature = currentTemperature
@@ -36,6 +39,7 @@ public struct Forecast: Sendable, Hashable {
         self.condition = condition
         self.hours = hours
         self.days = days
+        self.currentTime = currentTime
         self.timeZone = timeZone
     }
 }
