@@ -56,7 +56,10 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
         URL(string: Self.forecastEndpoint)?.appending(queryItems: [
             URLQueryItem(name: "latitude", value: String(city.latitude)),
             URLQueryItem(name: "longitude", value: String(city.longitude)),
-            URLQueryItem(name: "current", value: "temperature_2m,cloud_cover,weather_code"),
+            URLQueryItem(
+                name: "current",
+                value: "temperature_2m,apparent_temperature,cloud_cover,uv_index,wind_speed_10m,weather_code",
+            ),
             URLQueryItem(name: "hourly", value: "temperature_2m,precipitation_probability,weather_code"),
             URLQueryItem(name: "forecast_hours", value: "12"),
             URLQueryItem(name: "timezone", value: "auto"),
@@ -108,13 +111,19 @@ private struct GeocodingResponse: Decodable {
 private struct ForecastCurrent: Decodable {
     let time: Double
     let temperature: Double
+    let feelsLike: Double
     let cloudCover: Int
+    let uvIndex: Double
+    let windSpeed: Double
     let weatherCode: Int
 
     enum CodingKeys: String, CodingKey {
         case time
         case temperature = "temperature_2m"
+        case feelsLike = "apparent_temperature"
         case cloudCover = "cloud_cover"
+        case uvIndex = "uv_index"
+        case windSpeed = "wind_speed_10m"
         case weatherCode = "weather_code"
     }
 }
@@ -173,7 +182,10 @@ private struct ForecastResponse: Decodable {
             .max() ?? 0
         return Forecast(
             currentTemperature: current.temperature,
+            feelsLikeTemperature: current.feelsLike,
             cloudCover: current.cloudCover,
+            uvIndex: current.uvIndex,
+            windSpeed: current.windSpeed,
             precipitationChance: precipitationToday,
             condition: WeatherCondition(wmoCode: current.weatherCode),
             hours: hours,

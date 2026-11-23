@@ -19,7 +19,10 @@
             }
             return Forecast(
                 currentTemperature: 14,
+                feelsLikeTemperature: 12,
                 cloudCover: 40,
+                uvIndex: 3,
+                windSpeed: 18,
                 precipitationChance: 30,
                 condition: .partlyCloudy,
                 hours: hours,

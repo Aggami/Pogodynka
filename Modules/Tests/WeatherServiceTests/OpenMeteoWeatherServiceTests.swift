@@ -106,7 +106,8 @@ struct OpenMeteoWeatherServiceTests {
         let codes = hours.map { _ in "2" }.joined(separator: ", ")
         return """
         {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
-         "current": {"time": \(currentTime), "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
+         "current": {"time": \(currentTime), "temperature_2m": 14.5, "apparent_temperature": 12.1, "cloud_cover": 40,
+                     "uv_index": 2.6, "wind_speed_10m": 17.6, "weather_code": 2},
          "hourly": {
            "time": \(times),
            "temperature_2m": [\(temperatures)],
@@ -118,7 +119,8 @@ struct OpenMeteoWeatherServiceTests {
 
     private static let forecastJSON = """
     {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
-     "current": {"time": 1700000000, "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
+     "current": {"time": 1700000000, "temperature_2m": 14.5, "apparent_temperature": 12.1, "cloud_cover": 40,
+                 "uv_index": 2.6, "wind_speed_10m": 17.6, "weather_code": 2},
      "hourly": {
        "time": [1700000000, 1700003600, 1700007200],
        "temperature_2m": [14.5, 13.0, 12.5],
@@ -133,7 +135,10 @@ struct OpenMeteoWeatherServiceTests {
         let forecast = try await service.forecast(for: Self.city)
 
         #expect(forecast.currentTemperature == 14.5)
+        #expect(forecast.feelsLikeTemperature == 12.1)
         #expect(forecast.cloudCover == 40)
+        #expect(forecast.uvIndex == 2.6)
+        #expect(forecast.windSpeed == 17.6)
         #expect(forecast.condition == .partlyCloudy)
         #expect(forecast.timeZone.identifier == "Europe/Warsaw")
         #expect(forecast.hours.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
@@ -155,6 +160,10 @@ struct OpenMeteoWeatherServiceTests {
         #expect(items.first { $0.name == "forecast_hours" }?.value == "12")
         #expect(items.first { $0.name == "timezone" }?.value == "auto")
         #expect(items.first { $0.name == "current" }?.value?.contains("weather_code") == true)
+        let current = items.first { $0.name == "current" }?.value?.split(separator: ",").map(String.init) ?? []
+        #expect(current.contains("apparent_temperature"))
+        #expect(current.contains("uv_index"))
+        #expect(current.contains("wind_speed_10m"))
         #expect(items.first { $0.name == "hourly" }?.value?.contains("weather_code") == true)
     }
 
@@ -195,6 +204,19 @@ struct OpenMeteoWeatherServiceTests {
         let forecast = try await service.forecast(for: Self.city)
 
         #expect(forecast.precipitationChance == 10)
+    }
+
+    @Test(arguments: ["apparent_temperature", "uv_index", "wind_speed_10m"])
+    func nullCurrentValueGivesServerError(field: String) async {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: #""\#(field)": "#,
+            with: #""\#(field)": null, "ignored": "#,
+        )
+        let service = makeService(json(broken))
+
+        await #expect(throws: WeatherServiceError.server) {
+            try await service.forecast(for: Self.city)
+        }
     }
 
     @Test(arguments: [
