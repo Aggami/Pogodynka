@@ -7,6 +7,7 @@ import WeatherService
 public struct SearchView: View {
     @State private var viewModel: SearchViewModel
     @State private var searchFieldText = ""
+    @FocusState private var isSearchFieldFocused: Bool
     private let onCitySelected: (City) -> Void
 
     public init(onCitySelected: @escaping (City) -> Void) {
@@ -25,14 +26,19 @@ public struct SearchView: View {
                 .padding(.top, 16)
             content
         }
-        .background(DesignSystemColor.background)
+        .background {
+            DesignSystemColor.background
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { isSearchFieldFocused = false }
+        }
         .foregroundStyle(DesignSystemColor.text)
         .navigationTitle("Pogodynka")
         .task { await viewModel.loadHistory() }
     }
 
     private var searchField: some View {
-        SearchField(text: $searchFieldText)
+        SearchField(text: $searchFieldText, isFocused: $isSearchFieldFocused)
             .onChange(of: searchFieldText) { _, newText in
                 let filtered = viewModel.processNewTextInput(newText)
                 if filtered != newText {
@@ -89,8 +95,17 @@ public struct SearchView: View {
     }
 
     private func cityList(_ cities: [City], header: String? = nil) -> some View {
-        List {
-            Section {
+        VStack(alignment: .leading, spacing: 0) {
+            if let header {
+                Label(header, systemImage: "clock")
+                    .font(.subheadline)
+                    .foregroundStyle(DesignSystemColor.secondaryText)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 4)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            List {
                 ForEach(cities) { city in
                     Button {
                         viewModel.selectCity(city)
@@ -102,17 +117,11 @@ public struct SearchView: View {
                     .listRowBackground(Color.clear)
                     .listRowSeparatorTint(DesignSystemColor.divider)
                 }
-            } header: {
-                if let header {
-                    Label(header, systemImage: "clock")
-                        .font(.subheadline)
-                        .foregroundStyle(DesignSystemColor.secondaryText)
-                        .textCase(nil)
-                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.immediately)
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
     }
 }
 

@@ -3,6 +3,7 @@ import SharedModels
 import SwiftUI
 
 struct CurrentWeatherBar: View {
+    @Environment(\.redactionReasons) private var redactionReasons
     let forecast: Forecast
 
     var body: some View {
@@ -62,7 +63,7 @@ struct CurrentWeatherBar: View {
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
-                Text(value)
+                Text(redactionReasons.contains(.placeholder) ? String(repeating: "0", count: 6) : value)
                     .font(.system(size: 17))
                     .foregroundStyle(DesignSystemColor.text)
             }
