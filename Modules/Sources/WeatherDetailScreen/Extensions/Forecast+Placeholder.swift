@@ -12,12 +12,24 @@ extension Forecast {
                 condition: .partlyCloudy,
             )
         }
+        let days = (1 ... 6).map { index in
+            DailyForecast(
+                date: start.addingTimeInterval(Double(index) * 86400),
+                minTemperature: 4,
+                maxTemperature: 12,
+                condition: .partlyCloudy,
+            )
+        }
         return Forecast(
             currentTemperature: 14,
+            feelsLikeTemperature: 12,
             cloudCover: 40,
+            uvIndex: 3,
+            windSpeed: 18,
             precipitationChance: 30,
             condition: .partlyCloudy,
-            hours: hours,
+            upcomingHoursForecast: hours,
+            upcomingDaysForecast: days,
             timeZone: .gmt,
         )
     }()

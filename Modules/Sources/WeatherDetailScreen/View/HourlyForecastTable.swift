@@ -5,59 +5,93 @@ import SwiftUI
 struct HourlyForecastTable: View {
     let forecast: Forecast
 
-    private let labelWidth: CGFloat = 48
     private let columnWidth: CGFloat = 56
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
-            labelColumn
+            labelGrid
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 0) {
-                    ForEach(Array(forecast.hours.enumerated()), id: \.offset) { index, hour in
-                        hourColumn(hour, isFirst: index == 0)
-                    }
-                }
+                hoursGrid
             }
         }
         .padding(.vertical, 8)
         .background(DesignSystemColor.surface, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private var labelColumn: some View {
-        VStack(spacing: 0) {
-            cell(height: Row.hour.height) { Text(verbatim: "") }
-            cell(height: Row.icon.height) { Text(verbatim: "") }
-            cell(height: Row.rain.height) { Text("Rain") }
-            cell(height: Row.temperature.height, showsDivider: false) { Text("Temp") }
+    private var labelGrid: some View {
+        Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+            GridRow { Color.clear.frame(width: 0, height: ConditionRowType.hour.height) }
+            divider
+            GridRow { Color.clear.frame(width: 0, height: ConditionRowType.icon.height) }
+            divider
+            GridRow {
+                Text("Precip.").unredacted()
+                    .frame(height: ConditionRowType.precipitation.height)
+            }
+            divider
+            GridRow {
+                Text("Temp").unredacted()
+                    .frame(height: ConditionRowType.temperature.height)
+            }
         }
         .font(.system(size: 13))
         .foregroundStyle(DesignSystemColor.secondaryText)
-        .frame(width: labelWidth)
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.horizontal, 8)
         .accessibilityHidden(true)
     }
 
-    private func hourColumn(_ hour: HourlyForecast, isFirst: Bool) -> some View {
-        let label = isFirst ? "Now" : hour.time.hourLabel(in: forecast.timeZone)
-        return VStack(spacing: 0) {
-            cell(height: Row.hour.height) {
-                Text(label)
-                    .font(.system(size: 13, weight: isFirst ? .semibold : .regular))
-                    .foregroundStyle(DesignSystemColor.secondaryText)
+    private var hoursGrid: some View {
+        let hours = Array(forecast.upcomingHoursForecast.enumerated())
+        return Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+            GridRow {
+                ForEach(hours, id: \.offset) { index, hour in
+                    Text(hourLabel(hour, isFirst: index == 0))
+                        .font(.system(size: 13, weight: index == 0 ? .semibold : .regular))
+                        .foregroundStyle(DesignSystemColor.secondaryText)
+                        .frame(width: columnWidth, height: ConditionRowType.hour.height)
+                }
             }
-            cell(height: Row.icon.height) {
-                WeatherIcon(condition: hour.condition, size: 24)
+            divider
+            GridRow {
+                ForEach(hours, id: \.offset) { _, hour in
+                    WeatherIcon(condition: hour.condition, size: 24)
+                        .frame(height: ConditionRowType.icon.height)
+                }
             }
-            cell(height: Row.rain.height) { value("\(hour.precipitationChance)%") }
-            cell(height: Row.temperature.height, showsDivider: false) {
-                value(hour.temperature.displayedTemperature)
+            divider
+            GridRow {
+                ForEach(hours, id: \.offset) { _, hour in
+                    value("\(hour.precipitationChance)%")
+                        .frame(height: ConditionRowType.precipitation.height)
+                }
+            }
+            divider
+            GridRow {
+                ForEach(hours, id: \.offset) { _, hour in
+                    value(hour.temperature.displayedTemperature)
+                        .frame(height: ConditionRowType.temperature.height)
+                }
             }
         }
-        .frame(width: columnWidth)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(label), \(hour.condition.displayName.lowercased()), rain \(hour.precipitationChance)%, "
-                + hour.temperature.displayedTemperature,
-        )
+        .accessibilityRepresentation {
+            VStack {
+                ForEach(hours, id: \.offset) { index, hour in
+                    Text(
+                        "\(hourLabel(hour, isFirst: index == 0)), \(hour.condition.displayName.lowercased()), "
+                            + "precipitation \(hour.precipitationChance)%, \(hour.temperature.displayedTemperature)",
+                    )
+                }
+            }
+        }
+    }
+
+    private var divider: some View {
+        DesignSystemColor.divider.frame(height: 1)
+    }
+
+    private func hourLabel(_ hour: HourlyForecast, isFirst: Bool) -> String {
+        isFirst ? "Now" : hour.time.hourLabel(in: forecast.timeZone)
     }
 
     private func value(_ text: String) -> some View {
@@ -66,29 +100,14 @@ struct HourlyForecastTable: View {
             .foregroundStyle(DesignSystemColor.text)
     }
 
-    private func cell(
-        height: CGFloat,
-        showsDivider: Bool = true,
-        @ViewBuilder content: () -> some View,
-    ) -> some View {
-        content()
-            .frame(maxWidth: .infinity)
-            .frame(height: height)
-            .overlay(alignment: .bottom) {
-                if showsDivider {
-                    DesignSystemColor.divider.frame(height: 1)
-                }
-            }
-    }
-
-    private enum Row {
-        case hour, icon, rain, temperature
+    private enum ConditionRowType {
+        case hour, icon, precipitation, temperature
 
         var height: CGFloat {
             switch self {
             case .hour: 32
             case .icon: 44
-            case .rain, .temperature: 40
+            case .precipitation, .temperature: 40
             }
         }
     }

@@ -10,4 +10,5 @@ public enum DesignSystemColor {
     public static let sun = Color("sun", bundle: .module)
     public static let cloud = Color("cloud", bundle: .module)
     public static let precipitation = Color("precipitation", bundle: .module)
+    public static let snow = Color("snow", bundle: .module)
 }

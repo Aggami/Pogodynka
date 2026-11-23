@@ -17,12 +17,25 @@
                     condition: condition,
                 )
             }
+            let dayConditions: [WeatherCondition] = [.partlyCloudy, .rain, .snow, .cloudy, .clear, .thunderstorm]
+            let days = dayConditions.enumerated().map { index, condition in
+                DailyForecast(
+                    date: start.addingTimeInterval(Double(index + 1) * 86400),
+                    minTemperature: 4 - Double(index),
+                    maxTemperature: 12 - Double(index),
+                    condition: condition,
+                )
+            }
             return Forecast(
                 currentTemperature: 14,
+                feelsLikeTemperature: 12,
                 cloudCover: 40,
+                uvIndex: 3,
+                windSpeed: 18,
                 precipitationChance: 30,
                 condition: .partlyCloudy,
-                hours: hours,
+                upcomingHoursForecast: hours,
+                upcomingDaysForecast: days,
                 timeZone: TimeZone(identifier: "Europe/Warsaw") ?? .gmt,
             )
         }()

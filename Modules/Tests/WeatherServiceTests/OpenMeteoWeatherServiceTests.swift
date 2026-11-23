@@ -96,14 +96,48 @@ struct OpenMeteoWeatherServiceTests {
         region: "małopolskie",
     )
 
+    private static func forecastJSON(
+        currentTime: Int,
+        hours: [(time: Int, chance: Int)],
+    ) -> String {
+        let times = hours.map(\.time)
+        let chances = hours.map { String($0.chance) }.joined(separator: ", ")
+        let temperatures = hours.map { _ in "10.0" }.joined(separator: ", ")
+        let codes = hours.map { _ in "2" }.joined(separator: ", ")
+        return """
+        {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
+         "current": {"time": \(currentTime), "temperature_2m": 14.5, "apparent_temperature": 12.1, "cloud_cover": 40,
+                     "uv_index": 2.6, "wind_speed_10m": 17.6, "weather_code": 2},
+         "hourly": {
+           "time": \(times),
+           "temperature_2m": [\(temperatures)],
+           "precipitation_probability": [\(chances)],
+           "weather_code": [\(codes)]
+         },
+         "daily": {
+           "time": [1699916400, 1700002800, 1700089200],
+           "weather_code": [2, 61, 71],
+           "temperature_2m_max": [8.0, 9.5, 1.2],
+           "temperature_2m_min": [2.0, 3.5, -3.1]
+         }}
+        """
+    }
+
     private static let forecastJSON = """
     {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
-     "current": {"time": 1700000000, "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
+     "current": {"time": 1700000000, "temperature_2m": 14.5, "apparent_temperature": 12.1, "cloud_cover": 40,
+                 "uv_index": 2.6, "wind_speed_10m": 17.6, "weather_code": 2},
      "hourly": {
        "time": [1700000000, 1700003600, 1700007200],
        "temperature_2m": [14.5, 13.0, 12.5],
        "precipitation_probability": [30, 55, null],
        "weather_code": [2, 61, 71]
+     },
+     "daily": {
+       "time": [1699916400, 1700002800, 1700089200],
+       "weather_code": [2, 61, 71],
+       "temperature_2m_max": [8.0, 9.5, 1.2],
+       "temperature_2m_min": [2.0, 3.5, -3.1]
      }}
     """
 
@@ -113,14 +147,17 @@ struct OpenMeteoWeatherServiceTests {
         let forecast = try await service.forecast(for: Self.city)
 
         #expect(forecast.currentTemperature == 14.5)
+        #expect(forecast.feelsLikeTemperature == 12.1)
         #expect(forecast.cloudCover == 40)
+        #expect(forecast.uvIndex == 2.6)
+        #expect(forecast.windSpeed == 17.6)
         #expect(forecast.condition == .partlyCloudy)
         #expect(forecast.timeZone.identifier == "Europe/Warsaw")
-        #expect(forecast.hours.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
+        #expect(forecast.upcomingHoursForecast.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
             .map { Date(timeIntervalSince1970: $0) })
-        #expect(forecast.hours.map(\.temperature) == [14.5, 13.0, 12.5])
-        #expect(forecast.hours.map(\.condition) == [.partlyCloudy, .rain, .snow])
-        #expect(forecast.hours.map(\.precipitationChance) == [30, 55, 0])
+        #expect(forecast.upcomingHoursForecast.map(\.temperature) == [14.5, 13.0, 12.5])
+        #expect(forecast.upcomingHoursForecast.map(\.condition) == [.partlyCloudy, .rain, .snow])
+        #expect(forecast.upcomingHoursForecast.map(\.precipitationChance) == [30, 55, 0])
     }
 
     @Test func forecastRequestSendsLocationHoursAndFields() async throws {
@@ -135,15 +172,68 @@ struct OpenMeteoWeatherServiceTests {
         #expect(items.first { $0.name == "forecast_hours" }?.value == "12")
         #expect(items.first { $0.name == "timezone" }?.value == "auto")
         #expect(items.first { $0.name == "current" }?.value?.contains("weather_code") == true)
+        let current = items.first { $0.name == "current" }?.value?.split(separator: ",").map(String.init) ?? []
+        #expect(current.contains("apparent_temperature"))
+        #expect(current.contains("uv_index"))
+        #expect(current.contains("wind_speed_10m"))
+        let daily = items.first { $0.name == "daily" }?.value?.split(separator: ",").map(String.init) ?? []
+        #expect(daily.contains("weather_code"))
+        #expect(daily.contains("temperature_2m_max"))
+        #expect(daily.contains("temperature_2m_min"))
+        #expect(items.first { $0.name == "forecast_days" }?.value == "7")
         #expect(items.first { $0.name == "hourly" }?.value?.contains("weather_code") == true)
     }
 
-    @Test func chanceOfRainIsTheCurrentHoursValue() async throws {
-        let service = makeService(json(Self.forecastJSON))
+    @Test func laterHourTodayWithHigherChanceSetsTodaysChance() async throws {
+        // 2023-11-14 12:06 in Warsaw, so all three hours are still today.
+        let now = 1_699_960_000
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 30), (now + 3600, 55), (now + 7200, 20)],
+        )))
 
         let forecast = try await service.forecast(for: Self.city)
 
-        #expect(forecast.precipitationChance == 30)
+        #expect(forecast.precipitationChance == 55)
+    }
+
+    @Test func higherChanceAfterMidnightInCitysTimeZoneIsIgnored() async throws {
+        // 21:20 in Warsaw; the hour at 00:20 is already tomorrow.
+        let now = 1_699_993_200
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 30), (now + 3600, 40), (now + 7200, 35), (now + 10800, 90)],
+        )))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.precipitationChance == 40)
+    }
+
+    @Test func todayFollowsCitysTimeZoneNotUTC() async throws {
+        // 23:13 in Warsaw; the next hour, 00:13 Warsaw, is still 23:13 UTC on the same day.
+        let now = 1_700_000_000
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 10), (now + 3600, 80)],
+        )))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.precipitationChance == 10)
+    }
+
+    @Test(arguments: ["apparent_temperature", "uv_index", "wind_speed_10m"])
+    func nullCurrentValueGivesServerError(field: String) async {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: #""\#(field)": "#,
+            with: #""\#(field)": null, "ignored": "#,
+        )
+        let service = makeService(json(broken))
+
+        await #expect(throws: WeatherServiceError.server) {
+            try await service.forecast(for: Self.city)
+        }
     }
 
     @Test(arguments: [
@@ -183,5 +273,72 @@ struct OpenMeteoWeatherServiceTests {
         await #expect(throws: WeatherServiceError.cancelled) {
             try await service.searchCities("Kraków")
         }
+    }
+}
+
+extension OpenMeteoWeatherServiceTests {
+    @Test func fullResponseGivesTheDaysAfterToday() async throws {
+        let service = makeService(json(Self.forecastJSON))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.upcomingDaysForecast == [
+            DailyForecast(
+                date: Date(timeIntervalSince1970: 1_700_002_800),
+                minTemperature: 3.5,
+                maxTemperature: 9.5,
+                condition: .rain,
+            ),
+            DailyForecast(
+                date: Date(timeIntervalSince1970: 1_700_089_200),
+                minTemperature: -3.1,
+                maxTemperature: 1.2,
+                condition: .snow,
+            ),
+        ])
+    }
+
+    @Test func dayWithMissingValueIsLeftOut() async throws {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: "[8.0, 9.5, 1.2]",
+            with: "[8.0, null, 1.2]",
+        )
+        let service = makeService(json(broken))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.upcomingDaysForecast.map(\.maxTemperature) == [1.2])
+    }
+
+    @Test func dailyArraysOfDifferentLengthsGiveServerError() async {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: "[2.0, 3.5, -3.1]",
+            with: "[2.0, 3.5]",
+        )
+        let service = makeService(json(broken))
+
+        await #expect(throws: WeatherServiceError.server) {
+            try await service.forecast(for: Self.city)
+        }
+    }
+
+    @Test func forecastHasAtMostSixDays() async throws {
+        let days = (0 ..< 9).map { 1_700_002_800 + $0 * 86400 }
+        let values = days.map { _ in "5.0" }.joined(separator: ", ")
+        let codes = days.map { _ in "2" }.joined(separator: ", ")
+        let json = Self.forecastJSON(currentTime: 1_700_000_000, hours: [(1_700_000_000, 10)])
+            .replacingOccurrences(
+                of: #""daily": \{[^}]*\}"#,
+                with: """
+                "daily": {"time": \(days), "weather_code": [\(codes)],
+                  "temperature_2m_max": [\(values)], "temperature_2m_min": [\(values)]}
+                """,
+                options: .regularExpression,
+            )
+        let service = makeService(self.json(json))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.upcomingDaysForecast.count == 6)
     }
 }

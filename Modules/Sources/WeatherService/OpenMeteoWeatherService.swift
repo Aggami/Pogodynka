@@ -56,9 +56,14 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
         URL(string: Self.forecastEndpoint)?.appending(queryItems: [
             URLQueryItem(name: "latitude", value: String(city.latitude)),
             URLQueryItem(name: "longitude", value: String(city.longitude)),
-            URLQueryItem(name: "current", value: "temperature_2m,cloud_cover,weather_code"),
+            URLQueryItem(
+                name: "current",
+                value: "temperature_2m,apparent_temperature,cloud_cover,uv_index,wind_speed_10m,weather_code",
+            ),
             URLQueryItem(name: "hourly", value: "temperature_2m,precipitation_probability,weather_code"),
+            URLQueryItem(name: "daily", value: "weather_code,temperature_2m_max,temperature_2m_min"),
             URLQueryItem(name: "forecast_hours", value: "12"),
+            URLQueryItem(name: "forecast_days", value: "7"),
             URLQueryItem(name: "timezone", value: "auto"),
             URLQueryItem(name: "timeformat", value: "unixtime"),
         ])
@@ -106,13 +111,21 @@ private struct GeocodingResponse: Decodable {
 }
 
 private struct ForecastCurrent: Decodable {
+    let time: Double
     let temperature: Double
+    let feelsLike: Double
     let cloudCover: Int
+    let uvIndex: Double
+    let windSpeed: Double
     let weatherCode: Int
 
     enum CodingKeys: String, CodingKey {
+        case time
         case temperature = "temperature_2m"
+        case feelsLike = "apparent_temperature"
         case cloudCover = "cloud_cover"
+        case uvIndex = "uv_index"
+        case windSpeed = "wind_speed_10m"
         case weatherCode = "weather_code"
     }
 }
@@ -131,24 +144,44 @@ private struct ForecastHourly: Decodable {
     }
 }
 
+private struct ForecastDaily: Decodable {
+    let time: [Double]
+    let weatherCode: [Int?]
+    let maxTemperature: [Double?]
+    let minTemperature: [Double?]
+
+    enum CodingKeys: String, CodingKey {
+        case time
+        case weatherCode = "weather_code"
+        case maxTemperature = "temperature_2m_max"
+        case minTemperature = "temperature_2m_min"
+    }
+}
+
 private struct ForecastResponse: Decodable {
     let timezone: String?
     let utcOffsetSeconds: Int
     let current: ForecastCurrent
     let hourly: ForecastHourly
+    let daily: ForecastDaily
 
     enum CodingKeys: String, CodingKey {
         case timezone
         case utcOffsetSeconds = "utc_offset_seconds"
         case current
         case hourly
+        case daily
     }
 
     var forecast: Forecast? {
         let count = hourly.time.count
+        let dayCount = daily.time.count
         guard hourly.temperature.count == count,
               hourly.precipitationProbability.count == count,
-              hourly.weatherCode.count == count
+              hourly.weatherCode.count == count,
+              daily.weatherCode.count == dayCount,
+              daily.maxTemperature.count == dayCount,
+              daily.minTemperature.count == dayCount
         else { return nil }
         let hours = (0 ..< count).compactMap { index -> HourlyForecast? in
             guard let temperature = hourly.temperature[index], let code = hourly.weatherCode[index] else { return nil }
@@ -162,12 +195,37 @@ private struct ForecastResponse: Decodable {
         let timeZone = timezone.flatMap { TimeZone(identifier: $0) }
             ?? TimeZone(secondsFromGMT: utcOffsetSeconds)
             ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let now = Date(timeIntervalSince1970: current.time)
+        let precipitationToday = hours
+            .filter { calendar.isDate($0.time, inSameDayAs: now) }
+            .map(\.precipitationChance)
+            .max() ?? 0
+        let days = (0 ..< dayCount).compactMap { index -> DailyForecast? in
+            let date = Date(timeIntervalSince1970: daily.time[index])
+            guard !calendar.isDate(date, inSameDayAs: now),
+                  let code = daily.weatherCode[index],
+                  let maxTemperature = daily.maxTemperature[index],
+                  let minTemperature = daily.minTemperature[index]
+            else { return nil }
+            return DailyForecast(
+                date: date,
+                minTemperature: minTemperature,
+                maxTemperature: maxTemperature,
+                condition: WeatherCondition(wmoCode: code),
+            )
+        }
         return Forecast(
             currentTemperature: current.temperature,
+            feelsLikeTemperature: current.feelsLike,
             cloudCover: current.cloudCover,
-            precipitationChance: hours.first?.precipitationChance ?? 0,
+            uvIndex: current.uvIndex,
+            windSpeed: current.windSpeed,
+            precipitationChance: precipitationToday,
             condition: WeatherCondition(wmoCode: current.weatherCode),
-            hours: hours,
+            upcomingHoursForecast: hours,
+            upcomingDaysForecast: Array(days.prefix(6)),
             timeZone: timeZone,
         )
     }

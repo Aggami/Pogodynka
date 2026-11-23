@@ -32,12 +32,14 @@ public struct WeatherDetailView: View {
             VStack(spacing: 16) {
                 CurrentWeatherBar(forecast: .placeholder)
                 HourlyForecastTable(forecast: .placeholder)
+                NextDaysList(forecast: .placeholder)
             }
             .redacted(reason: .placeholder)
         case let .loaded(forecast):
             VStack(spacing: 16) {
                 CurrentWeatherBar(forecast: forecast)
                 HourlyForecastTable(forecast: forecast)
+                NextDaysList(forecast: forecast)
                 Text("Weather data by Open-Meteo.com")
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
