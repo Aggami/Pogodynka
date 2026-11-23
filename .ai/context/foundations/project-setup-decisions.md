@@ -20,6 +20,10 @@ Why the Xcode project is set up the way it is (ticket #1).
   With `Pogodynka.xcworkspace` (app project + `Modules` package) the package
   gets its own scheme, and its tests run with no extra setup.
 
+Update (2026-11-23): the `Pogodynka` scheme now runs every package test target,
+so one ⌘U (or one `xcodebuild test`) runs all the tests. A new test target is
+added to the scheme's Test action by hand (see the README).
+
 ## Costs
 
 - Package resources need `bundle: .module`.
