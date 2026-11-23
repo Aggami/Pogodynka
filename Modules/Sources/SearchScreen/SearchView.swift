@@ -90,6 +90,7 @@ public struct SearchView: View {
                 ForEach(cities) { city in
                     Button {
                         viewModel.selectCity(city)
+                        searchFieldText = ""
                         onCitySelected(city)
                     } label: {
                         CityRow(city: city)
