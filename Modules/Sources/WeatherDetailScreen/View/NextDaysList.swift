@@ -12,8 +12,8 @@ struct NextDaysList: View {
                 .foregroundStyle(DesignSystemColor.secondaryText)
                 .unredacted()
                 .padding(.vertical, 8)
-            ForEach(Array(forecast.days.enumerated()), id: \.offset) { index, day in
-                row(day, isLast: index == forecast.days.count - 1)
+            ForEach(Array(forecast.upcomingDaysForecast.enumerated()), id: \.offset) { index, day in
+                dailyForecastRow(day, isLast: index == forecast.upcomingDaysForecast.count - 1)
             }
         }
         .padding(.horizontal, 16)
@@ -22,8 +22,8 @@ struct NextDaysList: View {
         .background(DesignSystemColor.surface, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func row(_ day: DailyForecast, isLast: Bool) -> some View {
-        let label = day.date.dayLabel(relativeTo: forecast.currentTime, in: forecast.timeZone)
+    private func dailyForecastRow(_ day: DailyForecast, isLast: Bool) -> some View {
+        let label = day.date.dayLabel(relativeTo: .now, in: forecast.timeZone)
         return HStack(spacing: 12) {
             Text(label)
                 .font(.system(size: 17))

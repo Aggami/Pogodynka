@@ -224,9 +224,8 @@ private struct ForecastResponse: Decodable {
             windSpeed: current.windSpeed,
             precipitationChance: precipitationToday,
             condition: WeatherCondition(wmoCode: current.weatherCode),
-            hours: hours,
-            days: Array(days.prefix(6)),
-            currentTime: now,
+            upcomingHoursForecast: hours,
+            upcomingDaysForecast: Array(days.prefix(6)),
             timeZone: timeZone,
         )
     }

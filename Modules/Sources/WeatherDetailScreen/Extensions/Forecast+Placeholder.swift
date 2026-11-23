@@ -28,9 +28,8 @@ extension Forecast {
             windSpeed: 18,
             precipitationChance: 30,
             condition: .partlyCloudy,
-            hours: hours,
-            days: days,
-            currentTime: start,
+            upcomingHoursForecast: hours,
+            upcomingDaysForecast: days,
             timeZone: .gmt,
         )
     }()

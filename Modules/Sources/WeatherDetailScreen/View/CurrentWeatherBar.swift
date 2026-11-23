@@ -37,19 +37,19 @@ struct CurrentWeatherBar: View {
     private var detailsGrid: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 20) {
-                detail(symbol: "cloud", "Cloud cover", "\(forecast.cloudCover)%")
-                detail(symbol: "sun.max", "UV index", forecast.uvIndex.displayedUVIndex)
+                conditionDetailView(symbol: "cloud", "Cloud cover", "\(forecast.cloudCover)%")
+                conditionDetailView(symbol: "sun.max", "UV index", forecast.uvIndex.displayedUVIndex)
             }
             Spacer()
             VStack(alignment: .leading, spacing: 20) {
-                detail(symbol: "drop", "Precipitation", "\(forecast.precipitationChance)%")
-                detail(symbol: "wind", "Wind", forecast.windSpeed.displayedWindSpeed)
+                conditionDetailView(symbol: "drop", "Precipitation", "\(forecast.precipitationChance)%")
+                conditionDetailView(symbol: "wind", "Wind", forecast.windSpeed.displayedWindSpeed)
             }
         }
         .padding(.horizontal, 40)
     }
 
-    private func detail(symbol: String, _ label: LocalizedStringKey, _ value: String) -> some View {
+    private func conditionDetailView(symbol: String, _ label: LocalizedStringKey, _ value: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: symbol)
                 .font(.system(size: 24))

@@ -5,16 +5,11 @@ public struct Forecast: Sendable, Hashable {
     public let feelsLikeTemperature: Double
     public let cloudCover: Int
     public let uvIndex: Double
-    /// In km/h.
     public let windSpeed: Double
-    /// The highest chance of rain or snow for the rest of today.
-    public let precipitationChance: Int
+    public let precipitationChance: Int // highest chance of rain or snow for the rest of today
     public let condition: WeatherCondition
-    public let hours: [HourlyForecast]
-    /// The days after today.
-    public let days: [DailyForecast]
-    /// The moment the forecast was made.
-    public let currentTime: Date
+    public let upcomingHoursForecast: [HourlyForecast]
+    public let upcomingDaysForecast: [DailyForecast]
     public let timeZone: TimeZone
 
     public init(
@@ -25,9 +20,8 @@ public struct Forecast: Sendable, Hashable {
         windSpeed: Double,
         precipitationChance: Int,
         condition: WeatherCondition,
-        hours: [HourlyForecast],
-        days: [DailyForecast],
-        currentTime: Date,
+        upcomingHoursForecast: [HourlyForecast],
+        upcomingDaysForecast: [DailyForecast],
         timeZone: TimeZone,
     ) {
         self.currentTemperature = currentTemperature
@@ -37,9 +31,8 @@ public struct Forecast: Sendable, Hashable {
         self.windSpeed = windSpeed
         self.precipitationChance = precipitationChance
         self.condition = condition
-        self.hours = hours
-        self.days = days
-        self.currentTime = currentTime
+        self.upcomingHoursForecast = upcomingHoursForecast
+        self.upcomingDaysForecast = upcomingDaysForecast
         self.timeZone = timeZone
     }
 }

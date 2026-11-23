@@ -153,11 +153,11 @@ struct OpenMeteoWeatherServiceTests {
         #expect(forecast.windSpeed == 17.6)
         #expect(forecast.condition == .partlyCloudy)
         #expect(forecast.timeZone.identifier == "Europe/Warsaw")
-        #expect(forecast.hours.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
+        #expect(forecast.upcomingHoursForecast.map(\.time) == [1_700_000_000, 1_700_003_600, 1_700_007_200]
             .map { Date(timeIntervalSince1970: $0) })
-        #expect(forecast.hours.map(\.temperature) == [14.5, 13.0, 12.5])
-        #expect(forecast.hours.map(\.condition) == [.partlyCloudy, .rain, .snow])
-        #expect(forecast.hours.map(\.precipitationChance) == [30, 55, 0])
+        #expect(forecast.upcomingHoursForecast.map(\.temperature) == [14.5, 13.0, 12.5])
+        #expect(forecast.upcomingHoursForecast.map(\.condition) == [.partlyCloudy, .rain, .snow])
+        #expect(forecast.upcomingHoursForecast.map(\.precipitationChance) == [30, 55, 0])
     }
 
     @Test func forecastRequestSendsLocationHoursAndFields() async throws {
@@ -282,7 +282,7 @@ extension OpenMeteoWeatherServiceTests {
 
         let forecast = try await service.forecast(for: Self.city)
 
-        #expect(forecast.days == [
+        #expect(forecast.upcomingDaysForecast == [
             DailyForecast(
                 date: Date(timeIntervalSince1970: 1_700_002_800),
                 minTemperature: 3.5,
@@ -307,7 +307,7 @@ extension OpenMeteoWeatherServiceTests {
 
         let forecast = try await service.forecast(for: Self.city)
 
-        #expect(forecast.days.map(\.maxTemperature) == [1.2])
+        #expect(forecast.upcomingDaysForecast.map(\.maxTemperature) == [1.2])
     }
 
     @Test func dailyArraysOfDifferentLengthsGiveServerError() async {
@@ -339,6 +339,6 @@ extension OpenMeteoWeatherServiceTests {
 
         let forecast = try await service.forecast(for: Self.city)
 
-        #expect(forecast.days.count == 6)
+        #expect(forecast.upcomingDaysForecast.count == 6)
     }
 }
