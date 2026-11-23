@@ -27,8 +27,8 @@ extension WeatherCondition {
             WeatherIconData(
                 symbolName: "cloud.snow.fill",
                 mainColor: cloud,
-                secondaryColor: .white,
-                tertiaryColor: .white,
+                secondaryColor: DesignSystemColor.snow,
+                tertiaryColor: DesignSystemColor.snow,
             )
         case .thunderstorm:
             WeatherIconData(

@@ -37,6 +37,7 @@ extension DesignSystemColorTests {
         ExpectedColor(name: "sun", color: DesignSystemColor.sun, light: 0xC2620A, dark: 0xFDCA40),
         ExpectedColor(name: "cloud", color: DesignSystemColor.cloud, light: 0x1D5FCC, dark: 0x7FAEF5),
         ExpectedColor(name: "precipitation", color: DesignSystemColor.precipitation, light: 0x4FA3F7, dark: 0x3D7AD6),
+        ExpectedColor(name: "snow", color: DesignSystemColor.snow, light: 0x3B8EDB, dark: 0xFFFFFF),
     ]
 
     private func hex(of color: Color, in style: UIUserInterfaceStyle) -> UInt32 {
