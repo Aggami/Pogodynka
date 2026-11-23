@@ -2,15 +2,13 @@
 
 A simple iOS weather app.
 
-You search for a city, and the cities you picked are kept in a search history between launches.
-For a picked city the app shows the current weather, the next 12 hours and the next days. It
-works in Light and Dark Mode, in English and Polish.
+You search for a city to see its current weather and the forecast for the next hours and days.
+It works in Light and Dark Mode, in English and in Polish.
 
 ## Weather API
 
-The app uses [Open-Meteo](https://open-meteo.com): its geocoding API for city search and its
-forecast API for the weather. It's free and needs no API key or account. As Open-Meteo's terms ask,
-the forecast screen credits it as the data source.
+The app uses [Open-Meteo](https://open-meteo.com): its geocoding API for city search and its forecast API for the weather. It's free and needs no API key or account. 
+As Open-Meteo's terms ask, the forecast screen credits it as the data source.
 
 ## Setup
 
@@ -19,9 +17,7 @@ Requirements:
 - Xcode 26 or 27
 - iOS 17 or later
 
-Open `Pogodynka.xcworkspace` in Xcode and run the `Pogodynka` scheme on a simulator or a real
-device. No other setup is needed: the weather API needs no key, and the only package dependency
-is fetched by Xcode.
+Open `Pogodynka.xcworkspace` in Xcode and run the `Pogodynka` scheme on a simulator or a real device. No other setup is needed: the weather API needs no key, and the only package dependency is fetched by Xcode.
 
 ## Architecture
 
@@ -43,10 +39,8 @@ Modules:
 
 ## Dependency injection
 
-Dependencies are plain protocols (`WeatherServiceProtocol`, `SearchHistoryStoreProtocol`) passed in
-through an `init`. A view model's `init` defaults to the live value (`OpenMeteoWeatherService()`,
-`UserDefaultsSearchHistoryStore()`), so the app passes nothing. Previews and tests pass a mock
-instead, from `TestSupport` (`MockWeatherService`, `MockSearchHistoryStore`).
+Dependencies are plain protocols passed in through an `init`. A view model's `init` defaults to the live value, so the app passes nothing. 
+Mock implementations are located in `TestSupport` folder.
 If the dependency tree grows, or features need global actors or controllable clocks, the next step is [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) (see [`dependency-injection.md`](.ai/context/foundations/dependency-injection.md)).
 
 ## Running tests
