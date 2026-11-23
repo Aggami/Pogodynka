@@ -113,6 +113,12 @@ struct OpenMeteoWeatherServiceTests {
            "temperature_2m": [\(temperatures)],
            "precipitation_probability": [\(chances)],
            "weather_code": [\(codes)]
+         },
+         "daily": {
+           "time": [1699916400, 1700002800, 1700089200],
+           "weather_code": [2, 61, 71],
+           "temperature_2m_max": [8.0, 9.5, 1.2],
+           "temperature_2m_min": [2.0, 3.5, -3.1]
          }}
         """
     }
@@ -126,6 +132,12 @@ struct OpenMeteoWeatherServiceTests {
        "temperature_2m": [14.5, 13.0, 12.5],
        "precipitation_probability": [30, 55, null],
        "weather_code": [2, 61, 71]
+     },
+     "daily": {
+       "time": [1699916400, 1700002800, 1700089200],
+       "weather_code": [2, 61, 71],
+       "temperature_2m_max": [8.0, 9.5, 1.2],
+       "temperature_2m_min": [2.0, 3.5, -3.1]
      }}
     """
 
@@ -164,6 +176,11 @@ struct OpenMeteoWeatherServiceTests {
         #expect(current.contains("apparent_temperature"))
         #expect(current.contains("uv_index"))
         #expect(current.contains("wind_speed_10m"))
+        let daily = items.first { $0.name == "daily" }?.value?.split(separator: ",").map(String.init) ?? []
+        #expect(daily.contains("weather_code"))
+        #expect(daily.contains("temperature_2m_max"))
+        #expect(daily.contains("temperature_2m_min"))
+        #expect(items.first { $0.name == "forecast_days" }?.value == "7")
         #expect(items.first { $0.name == "hourly" }?.value?.contains("weather_code") == true)
     }
 
@@ -256,5 +273,72 @@ struct OpenMeteoWeatherServiceTests {
         await #expect(throws: WeatherServiceError.cancelled) {
             try await service.searchCities("Kraków")
         }
+    }
+}
+
+extension OpenMeteoWeatherServiceTests {
+    @Test func fullResponseGivesTheDaysAfterToday() async throws {
+        let service = makeService(json(Self.forecastJSON))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.days == [
+            DailyForecast(
+                date: Date(timeIntervalSince1970: 1_700_002_800),
+                minTemperature: 3.5,
+                maxTemperature: 9.5,
+                condition: .rain,
+            ),
+            DailyForecast(
+                date: Date(timeIntervalSince1970: 1_700_089_200),
+                minTemperature: -3.1,
+                maxTemperature: 1.2,
+                condition: .snow,
+            ),
+        ])
+    }
+
+    @Test func dayWithMissingValueIsLeftOut() async throws {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: "[8.0, 9.5, 1.2]",
+            with: "[8.0, null, 1.2]",
+        )
+        let service = makeService(json(broken))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.days.map(\.maxTemperature) == [1.2])
+    }
+
+    @Test func dailyArraysOfDifferentLengthsGiveServerError() async {
+        let broken = Self.forecastJSON.replacingOccurrences(
+            of: "[2.0, 3.5, -3.1]",
+            with: "[2.0, 3.5]",
+        )
+        let service = makeService(json(broken))
+
+        await #expect(throws: WeatherServiceError.server) {
+            try await service.forecast(for: Self.city)
+        }
+    }
+
+    @Test func forecastHasAtMostSixDays() async throws {
+        let days = (0 ..< 9).map { 1_700_002_800 + $0 * 86400 }
+        let values = days.map { _ in "5.0" }.joined(separator: ", ")
+        let codes = days.map { _ in "2" }.joined(separator: ", ")
+        let json = Self.forecastJSON(currentTime: 1_700_000_000, hours: [(1_700_000_000, 10)])
+            .replacingOccurrences(
+                of: #""daily": \{[^}]*\}"#,
+                with: """
+                "daily": {"time": \(days), "weather_code": [\(codes)],
+                  "temperature_2m_max": [\(values)], "temperature_2m_min": [\(values)]}
+                """,
+                options: .regularExpression,
+            )
+        let service = makeService(self.json(json))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.days.count == 6)
     }
 }
