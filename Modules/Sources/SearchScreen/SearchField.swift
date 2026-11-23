@@ -12,7 +12,7 @@ struct SearchField: View {
             TextField("", text: $text, prompt: prompt)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
-                .accessibilityLabel("Search for a city")
+                .accessibilityLabel(Text("Search for a city", bundle: .module))
             if !text.isEmpty {
                 clearButton
             }
@@ -22,7 +22,7 @@ struct SearchField: View {
     }
 
     private var prompt: Text {
-        Text("Start searching a city")
+        Text("Start searching a city", bundle: .module)
             .foregroundStyle(DesignSystemColor.secondaryText)
     }
 
@@ -33,7 +33,7 @@ struct SearchField: View {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(DesignSystemColor.secondaryText)
         }
-        .accessibilityLabel("Clear text")
+        .accessibilityLabel(Text("Clear text", bundle: .module))
     }
 }
 

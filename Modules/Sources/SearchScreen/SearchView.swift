@@ -64,7 +64,7 @@ public struct SearchView: View {
             } description: {
                 Text(error.message)
             } actions: {
-                Button("Try again") { viewModel.retry() }
+                Button { viewModel.retry() } label: { Text("Try again", bundle: .module) }
             }
         }
     }
@@ -74,17 +74,21 @@ public struct SearchView: View {
         if !viewModel.showsHistory {
             Spacer()
         } else if viewModel.history.isEmpty {
-            ContentUnavailableView(
-                "What is the weather like?",
-                systemImage: "magnifyingglass",
-                description: Text("Start searching for a city around the world to see the weather forecast."),
-            )
+            ContentUnavailableView {
+                Label {
+                    Text("What is the weather like?", bundle: .module)
+                } icon: {
+                    Image(systemName: "magnifyingglass")
+                }
+            } description: {
+                Text("Start searching for a city around the world to see the weather forecast.", bundle: .module)
+            }
         } else {
-            cityList(viewModel.history, header: "Latest searches")
+            cityList(viewModel.history, header: String(localized: "Latest searches", bundle: .module))
         }
     }
 
-    private func cityList(_ cities: [City], header: LocalizedStringKey? = nil) -> some View {
+    private func cityList(_ cities: [City], header: String? = nil) -> some View {
         List {
             Section {
                 ForEach(cities) { city in

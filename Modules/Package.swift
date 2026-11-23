@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Modules",
+    defaultLocalization: "en",
     platforms: [.iOS(.v17)],
     products: [
         .library(name: "AppFeature", targets: ["AppFeature"]),
@@ -26,6 +27,7 @@ let package = Package(
         .target(
             name: "SearchScreen",
             dependencies: ["WeatherService", "Persistence", "DesignSystem", "SharedModels"],
+            resources: [.process("Resources")],
         ),
         .testTarget(name: "SearchScreenTests", dependencies: ["SearchScreen", "TestSupport", "SharedModels"]),
         .target(name: "WeatherDetailScreen", dependencies: ["SharedModels", "WeatherService", "DesignSystem"]),
