@@ -61,7 +61,7 @@ public struct OpenMeteoWeatherService: WeatherServiceProtocol {
                 value: "temperature_2m,apparent_temperature,cloud_cover,uv_index,wind_speed_10m,weather_code",
             ),
             URLQueryItem(name: "hourly", value: "temperature_2m,precipitation_probability,weather_code"),
-            URLQueryItem(name: "daily", value: "weather_code,temperature_2m_max,temperature_2m_min"),
+            URLQueryItem(name: "daily", value: "weather_code,temperature_2m_max,precipitation_probability_max"),
             URLQueryItem(name: "forecast_hours", value: "12"),
             URLQueryItem(name: "forecast_days", value: "7"),
             URLQueryItem(name: "timezone", value: "auto"),
@@ -148,13 +148,13 @@ private struct ForecastDaily: Decodable {
     let time: [Double]
     let weatherCode: [Int?]
     let maxTemperature: [Double?]
-    let minTemperature: [Double?]
+    let precipitationChance: [Int?]
 
     enum CodingKeys: String, CodingKey {
         case time
         case weatherCode = "weather_code"
         case maxTemperature = "temperature_2m_max"
-        case minTemperature = "temperature_2m_min"
+        case precipitationChance = "precipitation_probability_max"
     }
 }
 
@@ -181,7 +181,7 @@ private struct ForecastResponse: Decodable {
               hourly.weatherCode.count == count,
               daily.weatherCode.count == dayCount,
               daily.maxTemperature.count == dayCount,
-              daily.minTemperature.count == dayCount
+              daily.precipitationChance.count == dayCount
         else { return nil }
         let hours = (0 ..< count).compactMap { index -> HourlyForecast? in
             guard let temperature = hourly.temperature[index], let code = hourly.weatherCode[index] else { return nil }
@@ -206,13 +206,12 @@ private struct ForecastResponse: Decodable {
             let date = Date(timeIntervalSince1970: daily.time[index])
             guard !calendar.isDate(date, inSameDayAs: now),
                   let code = daily.weatherCode[index],
-                  let maxTemperature = daily.maxTemperature[index],
-                  let minTemperature = daily.minTemperature[index]
+                  let maxTemperature = daily.maxTemperature[index]
             else { return nil }
             return DailyForecast(
                 date: date,
-                minTemperature: minTemperature,
                 maxTemperature: maxTemperature,
+                precipitationChance: daily.precipitationChance[index] ?? 0,
                 condition: WeatherCondition(wmoCode: code),
             )
         }

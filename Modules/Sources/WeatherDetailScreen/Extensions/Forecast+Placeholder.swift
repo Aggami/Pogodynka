@@ -15,8 +15,8 @@ extension Forecast {
         let days = (1 ... 6).map { index in
             DailyForecast(
                 date: start.addingTimeInterval(Double(index) * 86400),
-                minTemperature: 4,
                 maxTemperature: 12,
+                precipitationChance: 30,
                 condition: .partlyCloudy,
             )
         }
