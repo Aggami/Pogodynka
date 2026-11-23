@@ -1,6 +1,6 @@
 ---
 project: Pogodynka
-version: 12
+version: 13
 prd_version: 1
 created: 2026-11-18
 updated: 2026-11-23
@@ -14,10 +14,9 @@ A simple, working weather app of high quality and with nice architecture.
 
 ## Items
 
-- CH-07: Final pass before handover: check every screen and state in Light and Dark Mode, check the README, go through the handover checklist, and build from a fresh clone. Needs: CH-06 Issue: #21
-
 ## Done
 
+- CH-07: Final pass before handover: check every screen and state in Light and Dark Mode, check the README, go through the handover checklist, and build from a fresh clone. Needs: CH-06 Issue: #21
 - CH-06: Add animations and visual polish. Needs: F-01, F-02, F-03 Issue: #19
 - F-04: The user sees extra data on the forecast details screen, e.g. the forecast for the next days. FRs: FR-07. Needs: F-02 Issue: #17
 - F-03: The user sees their search history, kept between launches. FRs: FR-04, FR-09, FR-10. Needs: F-01 Issue: #13
@@ -43,3 +42,4 @@ A simple, working weather app of high quality and with nice architecture.
 - v10 (2026-11-22): F-03 done
 - v11 (2026-11-23): F-04 done
 - v12 (2026-11-23): CH-06 done
+- v13 (2026-11-23): CH-07 done
