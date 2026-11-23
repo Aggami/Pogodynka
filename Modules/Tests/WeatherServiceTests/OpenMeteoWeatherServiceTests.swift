@@ -312,8 +312,8 @@ extension OpenMeteoWeatherServiceTests {
 
     @Test func dailyArraysOfDifferentLengthsGiveServerError() async {
         let broken = Self.forecastJSON.replacingOccurrences(
-            of: "[2.0, 3.5, -3.1]",
-            with: "[2.0, 3.5]",
+            of: "[20, 70, null]",
+            with: "[20, 70]",
         )
         let service = makeService(json(broken))
 

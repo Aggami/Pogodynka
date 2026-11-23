@@ -6,6 +6,8 @@ struct CurrentWeatherBar: View {
     @Environment(\.redactionReasons) private var redactionReasons
     let forecast: Forecast
 
+    private let placeholderValue = String(repeating: "0", count: 6)
+
     var body: some View {
         VStack(spacing: 20) {
             temperatureView
@@ -63,7 +65,7 @@ struct CurrentWeatherBar: View {
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
-                Text(redactionReasons.contains(.placeholder) ? String(repeating: "0", count: 6) : value)
+                Text(redactionReasons.contains(.placeholder) ? placeholderValue : value)
                     .font(.system(size: 17))
                     .foregroundStyle(DesignSystemColor.text)
             }
