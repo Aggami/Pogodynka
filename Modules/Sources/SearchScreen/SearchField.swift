@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SearchField: View {
     @Binding var text: String
+    var isFocused: FocusState<Bool>.Binding
 
     var body: some View {
         HStack(spacing: 8) {
@@ -12,7 +13,8 @@ struct SearchField: View {
             TextField("", text: $text, prompt: prompt)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
-                .accessibilityLabel("Search for a city")
+                .focused(isFocused)
+                .accessibilityLabel(Text("Search for a city", bundle: .module))
             if !text.isEmpty {
                 clearButton
             }
@@ -22,7 +24,7 @@ struct SearchField: View {
     }
 
     private var prompt: Text {
-        Text("Start searching a city")
+        Text("Start searching a city", bundle: .module)
             .foregroundStyle(DesignSystemColor.secondaryText)
     }
 
@@ -33,13 +35,14 @@ struct SearchField: View {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(DesignSystemColor.secondaryText)
         }
-        .accessibilityLabel("Clear text")
+        .accessibilityLabel(Text("Clear text", bundle: .module))
     }
 }
 
 #if DEBUG
     #Preview {
-        SearchField(text: .constant("Wro"))
+        @FocusState var isFocused: Bool
+        SearchField(text: .constant("Wro"), isFocused: $isFocused)
             .padding()
     }
 #endif

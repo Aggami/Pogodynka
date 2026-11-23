@@ -73,5 +73,26 @@ extension SearchViewModelTests {
 
             #expect(viewModel.history == [wroclaw, krakow])
         }
+
+        @Test func clearingTheTextAfterResultsGoesBackToIdleWithThePickedCityOnTop() async {
+            let service = MockWeatherService(searchResultToReturn: .success([wroclaw]))
+            let viewModel = SearchViewModel(
+                weatherService: service,
+                historyStore: MockSearchHistoryStore(history: [krakow]),
+                debounce: .zero,
+            )
+            await viewModel.loadHistory()
+            _ = viewModel.processNewTextInput("Wro")
+            await viewModel.waitForSearch()
+            #expect(viewModel.state == .loaded([wroclaw]))
+
+            viewModel.selectCity(wroclaw)
+            _ = viewModel.processNewTextInput("")
+            await viewModel.waitForHistorySave()
+
+            #expect(viewModel.state == .idle)
+            #expect(viewModel.showsHistory)
+            #expect(viewModel.history == [wroclaw, krakow])
+        }
     }
 }

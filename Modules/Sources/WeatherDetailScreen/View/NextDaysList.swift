@@ -7,7 +7,7 @@ struct NextDaysList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Next days")
+            Text("Next days", bundle: .module)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(DesignSystemColor.secondaryText)
                 .unredacted()
@@ -28,10 +28,11 @@ struct NextDaysList: View {
             Text(label)
                 .font(.system(size: 17))
                 .frame(maxWidth: .infinity, alignment: .leading)
-            WeatherIcon(condition: day.condition, size: 24)
-            Text(day.minTemperature.displayedTemperature)
+            Text("\(day.precipitationChance)%")
+                .font(.system(size: 13).monospacedDigit())
                 .foregroundStyle(DesignSystemColor.secondaryText)
                 .frame(width: 44, alignment: .trailing)
+            WeatherIcon(condition: day.condition, size: 24)
             Text(day.maxTemperature.displayedTemperature)
                 .foregroundStyle(DesignSystemColor.text)
                 .frame(width: 44, alignment: .trailing)
@@ -44,9 +45,12 @@ struct NextDaysList: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(label), \(day.condition.displayName.lowercased()), lowest \(day.minTemperature.displayedTemperature), "
-                + "highest \(day.maxTemperature.displayedTemperature)",
-        )
+        .accessibilityLabel(String(
+            localized: """
+            \(label), \(day.condition.displayName.lowercased()), highest \(day.maxTemperature.displayedTemperature), \
+            precipitation \(day.precipitationChance)%
+            """,
+            bundle: .module,
+        ))
     }
 }

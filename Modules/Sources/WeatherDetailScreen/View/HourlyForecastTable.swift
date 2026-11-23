@@ -25,12 +25,12 @@ struct HourlyForecastTable: View {
             GridRow { Color.clear.frame(width: 0, height: ConditionRowType.icon.height) }
             divider
             GridRow {
-                Text("Precip.").unredacted()
+                Text("Precip.", bundle: .module).unredacted()
                     .frame(height: ConditionRowType.precipitation.height)
             }
             divider
             GridRow {
-                Text("Temp").unredacted()
+                Text("Temp", bundle: .module).unredacted()
                     .frame(height: ConditionRowType.temperature.height)
             }
         }
@@ -77,10 +77,13 @@ struct HourlyForecastTable: View {
         .accessibilityRepresentation {
             VStack {
                 ForEach(hours, id: \.offset) { index, hour in
-                    Text(
-                        "\(hourLabel(hour, isFirst: index == 0)), \(hour.condition.displayName.lowercased()), "
-                            + "precipitation \(hour.precipitationChance)%, \(hour.temperature.displayedTemperature)",
-                    )
+                    Text(String(
+                        localized: """
+                        \(hourLabel(hour, isFirst: index == 0)), \(hour.condition.displayName.lowercased()), \
+                        precipitation \(hour.precipitationChance)%, \(hour.temperature.displayedTemperature)
+                        """,
+                        bundle: .module,
+                    ))
                 }
             }
         }
@@ -91,7 +94,7 @@ struct HourlyForecastTable: View {
     }
 
     private func hourLabel(_ hour: HourlyForecast, isFirst: Bool) -> String {
-        isFirst ? "Now" : hour.time.hourLabel(in: forecast.timeZone)
+        isFirst ? String(localized: "Now", bundle: .module) : hour.time.hourLabel(in: forecast.timeZone)
     }
 
     private func value(_ text: String) -> some View {

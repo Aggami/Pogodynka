@@ -42,13 +42,13 @@ extension WeatherCondition {
 
     var displayName: String {
         switch self {
-        case .clear: "Clear"
-        case .partlyCloudy: "Partly cloudy"
-        case .cloudy: "Cloudy"
-        case .fog: "Fog"
-        case .rain: "Rain"
-        case .snow: "Snow"
-        case .thunderstorm: "Thunderstorm"
+        case .clear: String(localized: "Clear", bundle: .module)
+        case .partlyCloudy: String(localized: "Partly cloudy", bundle: .module)
+        case .cloudy: String(localized: "Cloudy", bundle: .module)
+        case .fog: String(localized: "Fog", bundle: .module)
+        case .rain: String(localized: "Rain", bundle: .module)
+        case .snow: String(localized: "Snow", bundle: .module)
+        case .thunderstorm: String(localized: "Thunderstorm", bundle: .module)
         }
     }
 }

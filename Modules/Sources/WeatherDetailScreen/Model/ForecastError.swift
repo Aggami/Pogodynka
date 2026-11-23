@@ -4,15 +4,15 @@ enum ForecastError: Equatable {
 
     var title: String {
         switch self {
-        case .noConnection: "No internet connection"
-        case .server: "Something went wrong"
+        case .noConnection: String(localized: "No internet connection", bundle: .module)
+        case .server: String(localized: "Something went wrong", bundle: .module)
         }
     }
 
     var message: String {
         switch self {
-        case .noConnection: "Check your connection and try again."
-        case .server: "We couldn't load the forecast. Please try again."
+        case .noConnection: String(localized: "Check your connection and try again.", bundle: .module)
+        case .server: String(localized: "We couldn't load the forecast. Please try again.", bundle: .module)
         }
     }
 

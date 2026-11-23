@@ -21,8 +21,8 @@
             let days = dayConditions.enumerated().map { index, condition in
                 DailyForecast(
                     date: start.addingTimeInterval(Double(index + 1) * 86400),
-                    minTemperature: 4 - Double(index),
                     maxTemperature: 12 - Double(index),
+                    precipitationChance: condition == .rain ? 60 : index * 10,
                     condition: condition,
                 )
             }

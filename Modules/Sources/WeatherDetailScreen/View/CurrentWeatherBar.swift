@@ -3,7 +3,10 @@ import SharedModels
 import SwiftUI
 
 struct CurrentWeatherBar: View {
+    @Environment(\.redactionReasons) private var redactionReasons
     let forecast: Forecast
+
+    private let placeholderValue = String(repeating: "0", count: 6)
 
     var body: some View {
         VStack(spacing: 20) {
@@ -24,7 +27,7 @@ struct CurrentWeatherBar: View {
                 WeatherIcon(condition: forecast.condition, size: 72)
             }
             HStack(spacing: 4) {
-                Text("Feels like")
+                Text("Feels like", bundle: .module)
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
                 Text(forecast.feelsLikeTemperature.displayedTemperature)
@@ -58,11 +61,11 @@ struct CurrentWeatherBar: View {
                 .accessibilityHidden(true)
                 .unredacted()
             VStack(alignment: .leading, spacing: 2) {
-                Text(label)
+                Text(label, bundle: .module)
                     .font(.system(size: 13))
                     .foregroundStyle(DesignSystemColor.secondaryText)
                     .unredacted()
-                Text(value)
+                Text(redactionReasons.contains(.placeholder) ? placeholderValue : value)
                     .font(.system(size: 17))
                     .foregroundStyle(DesignSystemColor.text)
             }
