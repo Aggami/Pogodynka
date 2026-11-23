@@ -15,7 +15,7 @@ struct CurrentWeatherBar: View {
             }
             VStack(spacing: 4) {
                 Text("Cloud cover \(forecast.cloudCover)%")
-                Text("Chance of rain or snow \(forecast.precipitationChance)%")
+                Text("Precipitation \(forecast.precipitationChance)%")
             }
             .foregroundStyle(DesignSystemColor.secondaryText)
         }

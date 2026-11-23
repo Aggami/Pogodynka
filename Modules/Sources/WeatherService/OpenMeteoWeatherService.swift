@@ -106,11 +106,13 @@ private struct GeocodingResponse: Decodable {
 }
 
 private struct ForecastCurrent: Decodable {
+    let time: Double
     let temperature: Double
     let cloudCover: Int
     let weatherCode: Int
 
     enum CodingKeys: String, CodingKey {
+        case time
         case temperature = "temperature_2m"
         case cloudCover = "cloud_cover"
         case weatherCode = "weather_code"
@@ -162,10 +164,17 @@ private struct ForecastResponse: Decodable {
         let timeZone = timezone.flatMap { TimeZone(identifier: $0) }
             ?? TimeZone(secondsFromGMT: utcOffsetSeconds)
             ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let now = Date(timeIntervalSince1970: current.time)
+        let precipitationToday = hours
+            .filter { calendar.isDate($0.time, inSameDayAs: now) }
+            .map(\.precipitationChance)
+            .max() ?? 0
         return Forecast(
             currentTemperature: current.temperature,
             cloudCover: current.cloudCover,
-            precipitationChance: hours.first?.precipitationChance ?? 0,
+            precipitationChance: precipitationToday,
             condition: WeatherCondition(wmoCode: current.weatherCode),
             hours: hours,
             timeZone: timeZone,

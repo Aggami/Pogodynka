@@ -27,8 +27,8 @@ struct HourlyForecastTable: View {
         VStack(spacing: 0) {
             cell(height: Row.hour.height) { Text(verbatim: "") }
             cell(height: Row.icon.height) { Text(verbatim: "") }
-            cell(height: Row.rain.height) { Text("Rain") }
-            cell(height: Row.temperature.height, showsDivider: false) { Text("Temp") }
+            cell(height: Row.precipitation.height) { Text("Precip.").unredacted() }
+            cell(height: Row.temperature.height, showsDivider: false) { Text("Temp").unredacted() }
         }
         .font(.system(size: 13))
         .foregroundStyle(DesignSystemColor.secondaryText)
@@ -47,7 +47,7 @@ struct HourlyForecastTable: View {
             cell(height: Row.icon.height) {
                 WeatherIcon(condition: hour.condition, size: 24)
             }
-            cell(height: Row.rain.height) { value("\(hour.precipitationChance)%") }
+            cell(height: Row.precipitation.height) { value("\(hour.precipitationChance)%") }
             cell(height: Row.temperature.height, showsDivider: false) {
                 value(hour.temperature.displayedTemperature)
             }
@@ -55,7 +55,7 @@ struct HourlyForecastTable: View {
         .frame(width: columnWidth)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "\(label), \(hour.condition.displayName.lowercased()), rain \(hour.precipitationChance)%, "
+            "\(label), \(hour.condition.displayName.lowercased()), precipitation \(hour.precipitationChance)%, "
                 + hour.temperature.displayedTemperature,
         )
     }
@@ -82,13 +82,13 @@ struct HourlyForecastTable: View {
     }
 
     private enum Row {
-        case hour, icon, rain, temperature
+        case hour, icon, precipitation, temperature
 
         var height: CGFloat {
             switch self {
             case .hour: 32
             case .icon: 44
-            case .rain, .temperature: 40
+            case .precipitation, .temperature: 40
             }
         }
     }

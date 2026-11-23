@@ -96,6 +96,26 @@ struct OpenMeteoWeatherServiceTests {
         region: "małopolskie",
     )
 
+    private static func forecastJSON(
+        currentTime: Int,
+        hours: [(time: Int, chance: Int)],
+    ) -> String {
+        let times = hours.map(\.time)
+        let chances = hours.map { String($0.chance) }.joined(separator: ", ")
+        let temperatures = hours.map { _ in "10.0" }.joined(separator: ", ")
+        let codes = hours.map { _ in "2" }.joined(separator: ", ")
+        return """
+        {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
+         "current": {"time": \(currentTime), "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
+         "hourly": {
+           "time": \(times),
+           "temperature_2m": [\(temperatures)],
+           "precipitation_probability": [\(chances)],
+           "weather_code": [\(codes)]
+         }}
+        """
+    }
+
     private static let forecastJSON = """
     {"utc_offset_seconds": 3600, "timezone": "Europe/Warsaw",
      "current": {"time": 1700000000, "temperature_2m": 14.5, "cloud_cover": 40, "weather_code": 2},
@@ -138,12 +158,43 @@ struct OpenMeteoWeatherServiceTests {
         #expect(items.first { $0.name == "hourly" }?.value?.contains("weather_code") == true)
     }
 
-    @Test func chanceOfRainIsTheCurrentHoursValue() async throws {
-        let service = makeService(json(Self.forecastJSON))
+    @Test func laterHourTodayWithHigherChanceSetsTodaysChance() async throws {
+        // 2023-11-14 12:06 in Warsaw, so all three hours are still today.
+        let now = 1_699_960_000
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 30), (now + 3600, 55), (now + 7200, 20)],
+        )))
 
         let forecast = try await service.forecast(for: Self.city)
 
-        #expect(forecast.precipitationChance == 30)
+        #expect(forecast.precipitationChance == 55)
+    }
+
+    @Test func higherChanceAfterMidnightInCitysTimeZoneIsIgnored() async throws {
+        // 21:20 in Warsaw; the hour at 00:20 is already tomorrow.
+        let now = 1_699_993_200
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 30), (now + 3600, 40), (now + 7200, 35), (now + 10800, 90)],
+        )))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.precipitationChance == 40)
+    }
+
+    @Test func todayFollowsCitysTimeZoneNotUTC() async throws {
+        // 23:13 in Warsaw; the next hour, 00:13 Warsaw, is still 23:13 UTC on the same day.
+        let now = 1_700_000_000
+        let service = makeService(json(Self.forecastJSON(
+            currentTime: now,
+            hours: [(now, 10), (now + 3600, 80)],
+        )))
+
+        let forecast = try await service.forecast(for: Self.city)
+
+        #expect(forecast.precipitationChance == 10)
     }
 
     @Test(arguments: [

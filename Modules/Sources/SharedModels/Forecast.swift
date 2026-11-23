@@ -3,6 +3,7 @@ import Foundation
 public struct Forecast: Sendable, Hashable {
     public let currentTemperature: Double
     public let cloudCover: Int
+    /// The highest chance of rain or snow for the rest of today.
     public let precipitationChance: Int
     public let condition: WeatherCondition
     public let hours: [HourlyForecast]
