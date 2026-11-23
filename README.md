@@ -6,6 +6,12 @@ You search for a city, and the cities you picked are kept in a search history be
 For a picked city the app shows the current weather, the next 12 hours and the next days. It
 works in Light and Dark Mode, in English and Polish.
 
+## Weather API
+
+The app uses [Open-Meteo](https://open-meteo.com): its geocoding API for city search and its
+forecast API for the weather. It's free and needs no API key or account. As Open-Meteo's terms ask,
+the forecast screen credits it as the data source.
+
 ## Setup
 
 Requirements:
@@ -16,12 +22,6 @@ Requirements:
 Open `Pogodynka.xcworkspace` in Xcode and run the `Pogodynka` scheme on a simulator or a real
 device. No other setup is needed: the weather API needs no key, and the only package dependency
 is fetched by Xcode.
-
-## Weather API
-
-The app uses [Open-Meteo](https://open-meteo.com): its geocoding API for city search and its
-forecast API for the weather. It's free and needs no API key or account. As Open-Meteo's terms ask,
-the forecast screen credits it as the data source.
 
 ## Architecture
 
