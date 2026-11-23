@@ -13,4 +13,5 @@ Modules/Package.resolved
 
 # Private files
 recruitment task/
-.ai/context/
+.ai/context/*
+!.ai/context/foundations/
